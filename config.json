@@ -1,0 +1,138 @@
+{
+  "layer1": [
+    {
+      "code": "ria",
+      "name": "Ria Money Transfer",
+      "is_international": true,
+      "currency": "EUR",
+      "commission_type": "percentage",
+      "commission_rate": "0",
+      "commission_fixed": "0",
+      "fx_partner_rate": "0",
+      "fx_cadorim_rate": "0",
+      "fx_market_rate": "0",
+      "channels": [
+        {"code": "sedad", "cost_payout": "0", "cost_type": "fixed"},
+        {"code": "click", "cost_payout": "0", "cost_type": "fixed"},
+        {"code": "caisse_cadorim", "cost_payout": "0", "cost_type": "fixed"},
+        {"code": "caisse_mboirick", "cost_payout": "0", "cost_type": "fixed"}
+      ]
+    },
+    {
+      "code": "terrapay",
+      "name": "TerraPay",
+      "is_international": true,
+      "currency": "USD",
+      "commission_type": "percentage",
+      "commission_rate": "0.005",
+      "commission_fixed": "0",
+      "fx_partner_rate": "39.0",
+      "fx_cadorim_rate": "39.0",
+      "fx_market_rate": "39.0",
+      "channels": [
+        {"code": "sedad", "cost_payout": "0", "cost_type": "fixed"},
+        {"code": "click", "cost_payout": "0", "cost_type": "fixed"},
+        {"code": "masrvi", "cost_payout": "0", "cost_type": "fixed"},
+        {"code": "bankily", "cost_payout": "0", "cost_type": "fixed"},
+        {"code": "mauripay", "cost_payout": "0", "cost_type": "fixed"}
+      ]
+    },
+    {
+      "code": "juba",
+      "name": "Juba Express",
+      "is_international": true,
+      "currency": "EUR",
+      "commission_type": "percentage",
+      "commission_rate": "0.01",
+      "commission_fixed": "0",
+      "fx_partner_rate": "0",
+      "fx_cadorim_rate": "0",
+      "fx_market_rate": "0",
+      "channels": [
+        {"code": "sedad", "cost_payout": "0", "cost_type": "fixed"},
+        {"code": "caisse_cadorim", "cost_payout": "0", "cost_type": "fixed"}
+      ]
+    },
+    {
+      "code": "cadorim_wallet",
+      "name": "Cadorim Wallet (MauriPay)",
+      "is_international": false,
+      "currency": "MRU",
+      "commission_type": "percentage",
+      "commission_rate": "0",
+      "commission_fixed": "0",
+      "fx_partner_rate": "0",
+      "fx_cadorim_rate": "0",
+      "fx_market_rate": "0",
+      "channels": [
+        {"code": "sedad", "cost_payout": "0", "cost_type": "fixed"},
+        {"code": "masrvi", "cost_payout": "0", "cost_type": "fixed"},
+        {"code": "click", "cost_payout": "0", "cost_type": "fixed"},
+        {"code": "wallet_internal", "cost_payout": "0", "cost_type": "fixed"}
+      ]
+    },
+    {
+      "code": "cadorim_b2c",
+      "name": "CadorimPay (B2C)",
+      "is_international": false,
+      "currency": "MRU",
+      "commission_type": "percentage",
+      "commission_rate": "0",
+      "commission_fixed": "0",
+      "fx_partner_rate": "0",
+      "fx_cadorim_rate": "0",
+      "fx_market_rate": "0",
+      "channels": [
+        {"code": "sedad", "cost_payout": "0", "cost_type": "fixed"},
+        {"code": "masrvi", "cost_payout": "0", "cost_type": "fixed"},
+        {"code": "caisse_cadorim", "cost_payout": "0", "cost_type": "fixed"}
+      ]
+    },
+    {
+      "code": "cadorim_agent",
+      "name": "Cadorim Agent Network",
+      "is_international": false,
+      "currency": "MRU",
+      "commission_type": "percentage",
+      "commission_rate": "0",
+      "commission_fixed": "0",
+      "fx_partner_rate": "0",
+      "fx_cadorim_rate": "0",
+      "fx_market_rate": "0",
+      "channels": [
+        {"code": "caisse_cadorim", "cost_payout": "0", "cost_type": "fixed"},
+        {"code": "caisse_seilibaby", "cost_payout": "0", "cost_type": "fixed"},
+        {"code": "caisse_mboirick", "cost_payout": "0", "cost_type": "fixed"}
+      ]
+    },
+    {
+      "code": "treasury",
+      "name": "Treasury / Internal",
+      "is_international": false,
+      "currency": "MRU",
+      "commission_type": "percentage",
+      "commission_rate": "0",
+      "commission_fixed": "0",
+      "fx_partner_rate": "0",
+      "fx_cadorim_rate": "0",
+      "fx_market_rate": "0",
+      "channels": []
+    }
+  ],
+  "layer2": [
+    {
+      "partner_code": "ria",
+      "bank_code": "bmi",
+      "currency": "EUR",
+      "fx_settlement_rate": "0",
+      "fx_reference_rate": "0"
+    },
+    {
+      "partner_code": "terrapay",
+      "bank_code": "bmi",
+      "currency": "USD",
+      "fx_settlement_rate": "0",
+      "fx_reference_rate": "0"
+    }
+  ]
+}

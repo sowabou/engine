@@ -1,0 +1,40 @@
+services:
+  engine:
+    build: .
+    ports: ["8000:8000"]
+    depends_on: [db]
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://cadorim:cadorim@db:5432/cadorim_engine
+      - WALLET_API_BASE=https://api.cadorim.com
+      - WALLET_API_KEY=${WALLET_API_KEY}
+  db:
+    image: postgres:15
+    environment:
+      - POSTGRES_DB=cadorim_engine
+      - POSTGRES_USER=cadorim
+      - POSTGRES_PASSWORD=cadorim
+    volumes: [pgdata:/var/lib/postgresql/data]
+    ports: ["5432:5432"]
+  mysql:
+    image: mysql:8.0
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+      - --default-authentication-plugin=mysql_native_password
+    environment:
+      - MYSQL_ROOT_PASSWORD=cadorim
+      - MYSQL_USER=cadorim
+      - MYSQL_PASSWORD=cadorim
+    ports: ["3306:3306"]
+    volumes:
+      - mysqldata:/var/lib/mysql
+      - ./data:/sql-dumps:ro
+      - ./docker/mysql-init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-pcadorim"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+volumes:
+  pgdata:
+  mysqldata:

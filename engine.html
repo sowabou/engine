@@ -1,0 +1,1878 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cadorim Engine</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.2/html2pdf.bundle.min.js"></script>
+<style>
+:root{--bg:#F7F5F0;--surface:#FFFFFF;--surface-alt:#F0EDE6;--text:#2D2D2D;--muted:#6B6B6B;--border:#E0DCD4;--accent:#D97706;--blue:#2563EB;--blue-light:#EFF6FF;--green:#059669;--green-light:#ECFDF5;--red:#DC2626;--red-light:#FEF2F2;--yellow:#CA8A04;--yellow-light:#FEF9C3;--purple:#7C3AED;--purple-light:#F5F3FF;--shadow-sm:0 1px 2px rgba(0,0,0,.06);--r:8px}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--text);line-height:1.5}
+.top{display:flex;justify-content:space-between;align-items:center;padding:18px 32px;max-width:1340px;margin:0 auto}
+.top h1{font-size:20px;font-weight:600} .top h1 span{color:var(--accent)}
+.tab-bar{display:flex;gap:4px;padding:0 32px;max-width:1340px;margin:0 auto 18px}
+.tab{padding:9px 20px;border-radius:20px;font-size:13px;font-weight:500;cursor:pointer;border:1px solid var(--border);background:var(--surface);color:var(--muted);transition:.15s}
+.tab:hover{color:var(--text)} .tab.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+.page{display:none;padding:0 32px;max-width:1340px;margin:0 auto;padding-bottom:40px} .page.active{display:block}
+/* Setup components */
+.sec{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:18px 22px;margin-bottom:18px;box-shadow:var(--shadow-sm)}
+.sec.l2{border-left:3px solid var(--purple)}
+.sec-hd{display:flex;align-items:center;gap:10px;margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid var(--border)}
+.sec-hd h2{font-size:15px;font-weight:600} .sec h3{font-size:14px;font-weight:600;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+.badge{display:inline-block;font-size:10px;font-weight:600;padding:1px 7px;border-radius:8px;text-transform:uppercase;letter-spacing:.3px}
+.b-blue{background:var(--blue-light);color:var(--blue)} .b-purple{background:var(--purple-light);color:var(--purple)}
+.b-a{background:var(--blue-light);color:var(--blue)} .b-l{background:var(--red-light);color:var(--red)} .b-e{background:var(--green-light);color:var(--green)}
+table{width:100%;border-collapse:collapse;font-size:13px}
+thead th{text-align:left;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);padding:7px 8px;background:var(--surface-alt);border-bottom:2px solid var(--border)}
+tbody td{padding:6px 8px;border-bottom:1px solid var(--border);vertical-align:middle} tbody tr:hover{background:var(--surface-alt)}
+.n{text-align:right;font-variant-numeric:tabular-nums} .pos{color:var(--green)} .neg{color:var(--red)}
+input,select{font-family:inherit;font-size:13px;padding:5px 9px;border:1px solid var(--border);border-radius:6px;background:var(--surface);color:var(--text);outline:none}
+input:focus,select:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(37,99,235,.1)}
+input[type="text"],input[type="number"]{width:100%} select{width:100%}
+input[type="checkbox"]{width:16px;height:16px;accent-color:var(--blue);cursor:pointer}
+.btn{display:inline-flex;align-items:center;gap:5px;font-size:13px;font-weight:500;padding:8px 16px;border:none;border-radius:6px;cursor:pointer;transition:.15s}
+.btn-blue{background:var(--blue);color:#fff} .btn-blue:hover{background:#1D4ED8}
+.btn-green{background:var(--green);color:#fff} .btn-green:hover{background:#047857}
+.btn-outline{background:var(--surface);color:var(--text);border:1px solid var(--border)} .btn-outline:hover{background:var(--surface-alt)}
+.btn-add{background:none;border:none;color:var(--blue);font-size:13px;font-weight:500;cursor:pointer;padding:5px 0} .btn-add:hover{text-decoration:underline}
+.btn-remove{background:none;border:none;color:var(--red);cursor:pointer;font-size:16px;padding:3px 7px;border-radius:4px} .btn-remove:hover{background:var(--red-light)}
+.actions{display:flex;gap:8px;margin:18px 0;flex-wrap:wrap}
+/* Dashboard components */
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(155px,1fr));gap:12px;margin-bottom:16px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:14px 16px;box-shadow:var(--shadow-sm);cursor:pointer;transition:box-shadow .15s}
+.card:hover{box-shadow:0 4px 12px rgba(0,0,0,.08)}
+.card .lb{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;display:flex;align-items:center;gap:5px}
+.card .vl{font-size:21px;font-weight:700;margin-top:5px;font-variant-numeric:tabular-nums}
+.card .sb{font-size:11px;color:var(--muted);margin-top:2px}
+.vg{color:var(--green)} .vb{color:var(--blue)} .vo{color:var(--accent)} .vr{color:var(--red)} .vp{color:var(--purple)}
+.eq{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:12px 18px;margin-bottom:16px;font-size:12px;display:flex;align-items:center;gap:6px;flex-wrap:wrap;box-shadow:var(--shadow-sm)}
+.alert{padding:9px 14px;border-radius:var(--r);margin-bottom:6px;font-size:12px;font-weight:500;display:flex;gap:6px;align-items:center}
+.alert-red{background:var(--red-light);color:var(--red);border:1px solid #fca5a5}
+.alert-yellow{background:var(--yellow-light);color:var(--yellow);border:1px solid #fde047}
+.drill{display:none;margin-top:10px;border-top:1px solid var(--border);padding-top:10px} .drill.open{display:block}
+.cw{position:relative;height:300px;margin-top:8px} .cw.tall{height:360px}
+.nodata{text-align:center;padding:50px;color:var(--muted)} .nodata b{color:var(--text)}
+#toast{position:fixed;bottom:20px;right:20px;background:var(--green);color:#fff;padding:10px 20px;border-radius:8px;font-weight:600;display:none;z-index:999}
+.pdf-bar{display:flex;justify-content:flex-end;padding:14px 0;gap:8px}
+.btn-pdf{display:inline-flex;align-items:center;gap:5px;font-size:13px;font-weight:600;padding:10px 20px;border:none;border-radius:6px;cursor:pointer;background:var(--red);color:#fff;transition:.15s}
+.btn-pdf:hover{background:#b91c1c}
+@media print{.tab-bar,.top,.pdf-bar,.btn-add,.btn-remove,.actions{display:none!important}}
+</style>
+</head>
+<body>
+
+<div class="top"><h1>Cadorim <span>Engine</span></h1>
+<div style="display:flex;gap:8px;align-items:center">
+<div id="data-toggle" style="display:flex;border:1px solid var(--border);border-radius:20px;overflow:hidden;font-size:11px">
+<button onclick="switchDataSource('sim')" id="btn-sim" style="padding:5px 12px;border:none;cursor:pointer;background:var(--accent);color:#fff;font-weight:600">Sim</button>
+<button onclick="switchDataSource('ria')" id="btn-ria" style="padding:5px 12px;border:none;cursor:pointer;background:var(--surface);color:var(--muted)">Ria</button>
+<button onclick="switchDataSource('all')" id="btn-all" style="padding:5px 12px;border:none;cursor:pointer;background:var(--surface);color:var(--muted)">All Partners</button>
+</div>
+<button class="btn-pdf" onclick="exportAllPDFs()" style="font-size:12px;padding:7px 14px">Export PDFs</button>
+</div></div>
+<div id="data-banner" style="display:none;padding:8px 32px;max-width:1340px;margin:0 auto;font-size:12px;border-radius:var(--r)"></div>
+<div class="tab-bar">
+<div class="tab active" onclick="sw(0)">Setup</div>
+<div class="tab" onclick="sw(1)">CEO</div>
+<div class="tab" onclick="sw(2)">Budget</div>
+<div class="tab" onclick="sw(3)">Treasury</div>
+<div class="tab" onclick="sw(4)">Operations</div>
+<div class="tab" onclick="sw(5)">Positions</div>
+<div class="tab" onclick="sw(6); loadRiaL1Checks()">Check Ria L1</div>
+<div class="tab" onclick="sw(7); loadRiaL2Checks()">Check Ria L2</div>
+<div class="tab" onclick="sw(8); loadTPL2Checks()">Check TerraPay L2</div>
+<div class="tab" onclick="sw(9); loadExchangeAccount()">MRU/USD Exchange</div>
+<div class="tab" onclick="sw(10); loadTPL1Checks()">Check TerraPay L1</div>
+</div>
+
+<!-- ══ TAB 0: SETUP ══ -->
+<div id="p0" class="page active">
+<div class="sec"><div class="sec-hd"><span class="badge b-blue">Layer 1</span><h2>Partner Configuration</h2></div>
+<table><thead><tr><th>Code</th><th>Name</th><th>Intl?</th><th>Cur</th><th>Comm Type</th><th>Rate</th><th>Fixed</th><th>FX Par</th><th>FX Cad</th><th>FX Mkt</th><th></th></tr></thead><tbody id="partners-body"></tbody></table>
+<button class="btn-add" onclick="addPartner()">+ Add partner</button></div>
+<div class="sec"><div class="sec-hd"><span class="badge b-blue">Layer 1</span><h2>Payout Channels</h2></div>
+<table><thead><tr><th>Partner</th><th>Channel</th><th>Cost</th><th>Type</th><th></th></tr></thead><tbody id="channels-body"></tbody></table>
+<button class="btn-add" onclick="addChannel()">+ Add channel</button></div>
+<div class="sec" style="border-left:3px solid var(--accent)"><div class="sec-hd"><span class="badge" style="background:#FEF3C7;color:var(--accent)">Liquidity</span><h2>Channel Liquidity Overview</h2></div>
+<div id="liquidity-overview"></div>
+<h3 style="margin-top:16px">Plafond Allocation Rules</h3>
+<table><thead><tr><th>Channel</th><th>Partner</th><th>Plafond (MRU)</th><th>%</th><th>Priority</th><th>Status</th><th></th></tr></thead><tbody id="plafonds-body"></tbody></table>
+<div id="plafond-validation" style="margin-top:8px;font-size:12px"></div>
+<button class="btn-add" onclick="addPlafond()">+ Add plafond rule</button>
+<button class="btn-add" onclick="autoFillPlafonds()" style="margin-left:16px;color:var(--accent)">Auto-fill from history</button></div>
+<div class="sec l2"><div class="sec-hd"><span class="badge b-purple">Layer 2</span><h2>Settlement Config</h2></div>
+<table><thead><tr><th>Partner</th><th>Bank</th><th>Cur</th><th>FX Sett</th><th>FX Ref</th><th></th></tr></thead><tbody id="settlements-body"></tbody></table>
+<button class="btn-add" onclick="addSettlement()">+ Add settlement</button></div>
+<div class="actions">
+<button class="btn btn-blue" onclick="runEngine()">Run Engine</button>
+<button class="btn btn-green" onclick="saveResults()">Export JSON</button>
+<button class="btn btn-outline" onclick="loadConfig()">Load Config</button>
+<button class="btn btn-outline" onclick="loadSimulation()">Load Simulation (50 txns)</button>
+<label style="display:flex;align-items:center;gap:5px;font-size:12px;color:var(--muted)"><input type="checkbox" id="auto-topup" checked style="width:14px;height:14px"> Auto top-up wallets</label>
+<label style="display:flex;align-items:center;gap:5px;font-size:12px;color:var(--muted)">Min caisse: <input type="text" id="caisse-min" value="50000" style="width:70px;font-size:12px;text-align:right"> MRU</label>
+<input type="file" id="file-input" accept=".json" style="display:none" onchange="handleFileLoad(event)">
+</div>
+<div id="setup-results"></div>
+<div class="pdf-bar"><button class="btn-pdf" onclick="exportPDF(0,'Cadorim_Setup')">Export Setup PDF</button></div>
+</div>
+
+<!-- ══ TAB 1: CEO ══ -->
+<div id="p1" class="page"><div class="nodata"><b>Run Engine</b> in Setup tab first</div></div>
+<!-- ══ TAB 2: BUDGET ══ -->
+<div id="p2" class="page"><div class="nodata"><b>Run Engine</b> in Setup tab first</div></div>
+<!-- ══ TAB 3: TREASURY ══ -->
+<div id="p3" class="page"><div class="nodata"><b>Run Engine</b> in Setup tab first</div></div>
+<!-- ══ TAB 4: OPERATIONS ══ -->
+<div id="p4" class="page"><div class="nodata"><b>Run Engine</b> in Setup tab first</div></div>
+<!-- ══ TAB 5: POSITIONS ══ -->
+<div id="p5" class="page"><div class="nodata"><b>Run Engine</b> in Setup tab first</div></div>
+<!-- ══ TAB 6: CHECK RIA L1 ══ -->
+<div id="p6" class="page">
+  <style>
+    .rl1-wrap{max-width:1340px;margin:0 auto;padding:0 32px}
+    .rl1-picker{display:flex;align-items:center;gap:14px;margin-bottom:16px}
+    .rl1-picker input{padding:7px 10px;border:1px solid var(--border);border-radius:8px;font-size:14px;background:var(--surface);color:var(--text)}
+    .rl1-banner{padding:14px 18px;border-radius:10px;font-size:14px;display:flex;align-items:center;gap:14px;margin-bottom:14px}
+    .rl1-banner .badge{padding:5px 14px;border-radius:14px;font-weight:700;font-size:12px;letter-spacing:.5px}
+    .rl1-banner.GREEN{background:#063;color:#cfe8d4}.rl1-banner.GREEN .badge{background:#10a05f;color:#fff}
+    .rl1-banner.AMBER{background:#4a3a06;color:#f4dca0}.rl1-banner.AMBER .badge{background:#d49a14;color:#fff}
+    .rl1-banner.RED{background:#5b1718;color:#f4b3b4}.rl1-banner.RED .badge{background:#d33b3d;color:#fff}
+    .rl1-cards{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:18px}
+    .rl1-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 14px}
+    .rl1-card .lbl{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}
+    .rl1-card .vl{font-size:21px;font-weight:700;margin-top:4px;font-variant-numeric:tabular-nums}
+    .rl1-card .sub{font-size:11px;color:var(--muted);margin-top:2px}
+    .rl1-card.red .vl{color:#ff6669}.rl1-card.amber .vl{color:#e7b14b}.rl1-card.green .vl{color:#37b56a}
+    .rl1-filters{display:flex;gap:10px;margin-bottom:10px;align-items:center;flex-wrap:wrap}
+    .rl1-filters select,.rl1-filters input{padding:6px 10px;border:1px solid var(--border);border-radius:6px;font-size:12px;background:var(--surface);color:var(--text)}
+    .rl1-filters .count{margin-left:auto;color:var(--muted);font-size:12px}
+    .rl1-table{background:var(--surface);border-radius:10px;overflow:hidden;border:1px solid var(--border)}
+    .rl1-table th{background:#23262d;text-align:left;padding:8px 10px;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px}
+    .rl1-table td{padding:7px 10px;border-top:1px solid var(--border);font-size:12px}
+    .rl1-table .st{display:inline-block;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:600}
+    .rl1-table .st-MATCH{background:#063;color:#cfe8d4}
+    .rl1-table .st-MATCH_DELAYED{background:#2a5a3d;color:#a8d4b8}
+    .rl1-table .st-MISSING_CADORIM{background:#5b1718;color:#f4b3b4}
+    .rl1-table .st-PENDING_RIA{background:#3d3306;color:#e6c870}
+    .rl1-table .st-MISSING_RIA{background:#4a3a06;color:#f4dca0}
+    .rl1-table .st-AMOUNT_MISMATCH,.rl1-table .st-COMM_MISMATCH{background:#3a3a3a;color:#dadada}
+    .rl1-actions{margin-top:14px;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:12px}
+    .rl1-actions h4{margin:0 0 8px;font-size:12px;color:var(--muted);text-transform:uppercase}
+    .rl1-actions .a{margin-bottom:6px;font-size:12px;color:var(--text)}
+    .rl1-actions .a b{color:#ff6669}
+  </style>
+  <div class="rl1-wrap">
+    <h2 style="margin:0 0 16px;font-size:18px">Check Ria L1 — réconciliation quotidienne</h2>
+    <div class="rl1-picker">
+      <label style="font-size:13px;color:var(--muted)">Date</label>
+      <input type="date" id="rl1-date">
+      <button class="btn btn-outline" style="font-size:12px;padding:6px 12px" onclick="rl1PrevDay()">‹ Jour précédent</button>
+      <button class="btn btn-outline" style="font-size:12px;padding:6px 12px" onclick="rl1NextDay()">Jour suivant ›</button>
+      <button class="btn btn-outline" style="font-size:12px;padding:6px 12px;margin-left:auto" onclick="rl1ExportCsv()">Export CSV</button>
+    </div>
+    <div id="rl1-banner" class="rl1-banner AMBER">
+      <span class="badge">—</span>
+      <span id="rl1-banner-msg">Sélectionne une date pour voir le rapport.</span>
+    </div>
+    <div class="rl1-cards" style="grid-template-columns:repeat(6,1fr)">
+      <div class="rl1-card"><div class="lbl">Volume Ria</div><div class="vl" id="rl1-c-ria">—</div><div class="sub" id="rl1-c-ria-sub">tx · EUR</div></div>
+      <div class="rl1-card"><div class="lbl">Volume Cadorim</div><div class="vl" id="rl1-c-cad">—</div><div class="sub" id="rl1-c-cad-sub">tx · EUR</div></div>
+      <div class="rl1-card green"><div class="lbl">Matchées (PIN)</div><div class="vl" id="rl1-c-match">—</div><div class="sub" id="rl1-c-match-sub">immédiates + tardives</div></div>
+      <div class="rl1-card red"><div class="lbl">Manquantes Cadorim</div><div class="vl" id="rl1-c-mcad">—</div><div class="sub">reportées Ria, absentes DB</div></div>
+      <div class="rl1-card amber"><div class="lbl">Pending Ria</div><div class="vl" id="rl1-c-pend">—</div><div class="sub" id="rl1-c-pend-sub">en attente confirmation</div></div>
+      <div class="rl1-card red"><div class="lbl">Missing Ria</div><div class="vl" id="rl1-c-mria">—</div><div class="sub">fermées manuellement</div></div>
+    </div>
+    <div class="rl1-filters">
+      <label style="font-size:12px;color:var(--muted)">Status</label>
+      <select id="rl1-flt-status" onchange="rl1RenderTable()">
+        <option value="">Tous</option>
+        <option value="MISSING_CADORIM">Missing Cadorim</option>
+        <option value="PENDING_RIA">Pending Ria (fenêtre ouverte)</option>
+        <option value="MISSING_RIA">Missing Ria (confirmé)</option>
+        <option value="MATCH_DELAYED">Match Delayed</option>
+        <option value="AMOUNT_MISMATCH">Amount mismatch</option>
+        <option value="COMM_MISMATCH">Commission mismatch</option>
+        <option value="MATCH">Match (immédiat)</option>
+      </select>
+      <label style="font-size:12px;color:var(--muted)">Local_Par_n</label>
+      <input type="text" id="rl1-flt-locpar" placeholder="ex: caisse_agent" oninput="rl1RenderTable()" style="width:180px">
+      <label style="font-size:12px;color:var(--muted)">Beneficiary</label>
+      <input type="text" id="rl1-flt-ben" placeholder="ex: NDIAYE" oninput="rl1RenderTable()" style="width:180px">
+      <span class="count" id="rl1-rowcount">—</span>
+    </div>
+    <div class="rl1-table">
+      <table style="width:100%">
+        <thead><tr>
+          <th>Status</th><th>PIN</th><th>Bénéficiaire</th>
+          <th class="n">MRU Ria</th><th class="n">MRU Cadorim</th><th class="n">Δ MRU</th>
+          <th class="n">Comm Ria €</th><th class="n">Comm Cad €</th>
+          <th>Local_Par_n</th><th>Cadorim ID</th>
+          <th class="n">Délai / Âge</th>
+        </tr></thead>
+        <tbody id="rl1-tbody"><tr><td colspan="11" style="padding:24px;text-align:center;color:var(--muted)">Chargement…</td></tr></tbody>
+      </table>
+    </div>
+    <div class="rl1-actions" id="rl1-actions" style="display:none">
+      <h4>Actions suggérées</h4>
+      <div id="rl1-actions-body"></div>
+    </div>
+
+    <!-- Pending Ria Queue — transversale, toutes dates -->
+    <div style="margin-top:32px;border-top:1px solid var(--border);padding-top:20px">
+      <h3 style="margin:0 0 12px;font-size:16px">Queue Pending Ria — toutes dates confondues</h3>
+      <p style="color:var(--muted);font-size:12px;margin:0 0 12px">
+        Transactions Cadorim non confirmées par Ria à ce jour. <b>PENDING_RIA</b> = en attente de confirmation Ria. <b>MISSING_RIA</b> = fermée manuellement. Triées par date décroissante (plus récentes en haut).
+      </p>
+      <div class="rl1-filters">
+        <label style="font-size:12px;color:var(--muted)">Status</label>
+        <select id="rl1q-flt-status" onchange="rl1RenderQueue()">
+          <option value="">Tous (Pending + Missing)</option>
+          <option value="PENDING_RIA">Pending uniquement</option>
+          <option value="MISSING_RIA">Missing confirmées uniquement</option>
+        </select>
+        <label style="font-size:12px;color:var(--muted)">Âge min (jours)</label>
+        <input type="number" id="rl1q-flt-age" placeholder="0" min="0" value="0" style="width:80px" oninput="rl1RenderQueue()">
+        <button class="btn btn-outline" style="font-size:12px;padding:6px 12px;margin-left:auto" onclick="rl1ExportQueueCsv()">Export CSV</button>
+        <span class="count" id="rl1q-rowcount">—</span>
+      </div>
+      <div class="rl1-table">
+        <table style="width:100%">
+          <thead><tr>
+            <th>Status</th><th>Date journalisation</th><th>PIN</th><th>Bénéficiaire</th>
+            <th class="n">EUR Cadorim</th>
+            <th>Local_Par_n</th><th>Cadorim ID</th>
+            <th class="n">Âge (jours)</th>
+          </tr></thead>
+          <tbody id="rl1q-tbody"><tr><td colspan="8" style="padding:24px;text-align:center;color:var(--muted)">Chargement…</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ TAB 7: CHECK RIA L2 ══ -->
+<div id="p7" class="page">
+  <div class="rl1-wrap">
+    <h2 style="margin:0 0 4px;font-size:18px">Check Ria L2 — settlement SWIFT ↔ BMI</h2>
+    <p style="color:var(--muted);font-size:12px;margin:0 0 16px">
+      <b>Layer 2 pur — settlement uniquement</b>. Matching per-crédit : SWIFT Ria (EUR wholesale) ↔ crédit BMI MRU.
+      Gain L2 = EUR × (FX_BMI réel − FX_interne 42,5). Aucune référence aux transactions L1 (voir onglet Check Ria L1 pour ça).
+    </p>
+    <div id="rl2-banner" class="rl1-banner AMBER">
+      <span class="badge">—</span>
+      <span id="rl2-banner-msg">Chargement…</span>
+    </div>
+    <div class="rl1-cards" style="grid-template-columns:repeat(5,1fr)">
+      <div class="rl1-card"><div class="lbl">SWIFT total</div><div class="vl" id="rl2-c-eur">—</div><div class="sub" id="rl2-c-eur-sub">EUR wholesale</div></div>
+      <div class="rl1-card"><div class="lbl">BMI MRU reçu</div><div class="vl" id="rl2-c-mru">—</div><div class="sub" id="rl2-c-mru-sub">au FX BMI réel</div></div>
+      <div class="rl1-card"><div class="lbl">MRU @ interne 42,5</div><div class="vl" id="rl2-c-internal">—</div><div class="sub">référence Cadorim</div></div>
+      <div class="rl1-card green"><div class="lbl">Gain L2 cumul</div><div class="vl" id="rl2-c-gain">—</div><div class="sub" id="rl2-c-gain-sub">MRU (FX_BMI − 42,5)</div></div>
+      <div class="rl1-card"><div class="lbl">FX BMI moyen</div><div class="vl" id="rl2-c-fx">—</div><div class="sub" id="rl2-c-fx-sub">vs 42,5</div></div>
+    </div>
+
+    <h3 style="margin:24px 0 10px;font-size:15px">Gain L2 par mois</h3>
+    <div class="rl1-table">
+      <table style="width:100%">
+        <thead><tr>
+          <th>Mois</th>
+          <th class="n">EUR settled</th>
+          <th class="n">BMI reçu (MRU)</th>
+          <th class="n">Gain L2 (MRU)</th>
+          <th class="n">% gain / BMI</th>
+        </tr></thead>
+        <tbody id="rl2-month-tbody"><tr><td colspan="5" style="padding:24px;text-align:center;color:var(--muted)">—</td></tr></tbody>
+      </table>
+    </div>
+
+    <div class="rl1-filters" style="margin-top:24px">
+      <h3 style="margin:0;font-size:15px;flex:1">Détail par settlement (1 match = 1 ligne)</h3>
+      <label style="font-size:12px;color:var(--muted)">Filtre</label>
+      <select id="rl2-flt-status" onchange="rl2RenderTable()">
+        <option value="MATCHED" selected>Matchés seulement (jours avec activité)</option>
+        <option value="">Toutes (matches + non matchés)</option>
+        <option value="SWIFT_NO_BMI">SWIFT en transit</option>
+        <option value="BMI_NO_SWIFT">BMI orphelins (pré-archive)</option>
+        <option value="LAG_GT_0">Matches avec lag &gt; 0</option>
+      </select>
+      <button class="btn btn-outline" style="font-size:12px;padding:6px 12px;margin-left:auto" onclick="rl2ExportCsv()">Export CSV</button>
+      <span class="count" id="rl2-rowcount">—</span>
+    </div>
+    <div class="rl1-table">
+      <table style="width:100%">
+        <thead><tr>
+          <th>Status</th>
+          <th>Date SWIFT</th><th class="n">EUR</th>
+          <th>Date BMI</th><th class="n">MRU BMI</th>
+          <th class="n">FX BMI</th>
+          <th class="n">MRU @42,5</th>
+          <th class="n">Gain L2</th>
+          <th class="n">Lag</th>
+          <th>Ref</th>
+        </tr></thead>
+        <tbody id="rl2-tbody"><tr><td colspan="10" style="padding:24px;text-align:center;color:var(--muted)">Chargement…</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ══ TAB 8: CHECK TERRAPAY L2 ══ -->
+<div id="p8" class="page">
+  <div class="rl1-wrap">
+    <h2 style="margin:0 0 4px;font-size:18px">Check TerraPay L2 — settlement USDC ↔ Binance</h2>
+    <p style="color:var(--muted);font-size:12px;margin:0 0 16px">
+      <b>Layer 2 pur — settlement uniquement</b>. TerraPay envoie USDC sur Cado02 → Cadorim vend via Binance P2P → MRU.
+      Gain L2 = USDC × (FX_Binance réel − FX_interne 39,5). Aucune référence aux transactions L1.
+    </p>
+    <div id="tpl2-banner" class="rl1-banner AMBER">
+      <span class="badge">—</span>
+      <span id="tpl2-banner-msg">Chargement…</span>
+    </div>
+    <div class="rl1-cards" style="grid-template-columns:repeat(5,1fr)">
+      <div class="rl1-card"><div class="lbl">USDC reçu Cado02</div><div class="vl" id="tpl2-c-usdc">—</div><div class="sub" id="tpl2-c-usdc-sub">settlements</div></div>
+      <div class="rl1-card"><div class="lbl">MRU @ 39,5 interne</div><div class="sub">référence Cadorim</div><div class="vl" id="tpl2-c-recv">—</div></div>
+      <div class="rl1-card"><div class="lbl">MRU @ Binance réel</div><div class="vl" id="tpl2-c-binance">—</div><div class="sub" id="tpl2-c-binance-sub">FX réel par jour</div></div>
+      <div class="rl1-card green"><div class="lbl">Gain L2 cumul</div><div class="vl" id="tpl2-c-gain">—</div><div class="sub" id="tpl2-c-gain-sub">(Binance−39,5) × USDC</div></div>
+      <div class="rl1-card"><div class="lbl">FX moyen</div><div class="vl" id="tpl2-c-fx">—</div><div class="sub" id="tpl2-c-fx-sub">vs 39,5</div></div>
+    </div>
+
+    <h3 style="margin:24px 0 10px;font-size:15px">Gain L2 par mois</h3>
+    <div class="rl1-table">
+      <table style="width:100%">
+        <thead><tr>
+          <th>Mois</th>
+          <th class="n">USDC reçu</th>
+          <th class="n">MRU reçu (Binance)</th>
+          <th class="n">Gain L2</th>
+          <th class="n">% gain / reçu</th>
+        </tr></thead>
+        <tbody id="tpl2-month-tbody"><tr><td colspan="5" style="padding:24px;text-align:center;color:var(--muted)">—</td></tr></tbody>
+      </table>
+    </div>
+
+    <div class="rl1-filters" style="margin-top:24px">
+      <h3 style="margin:0;font-size:15px;flex:1">Détail par settlement</h3>
+      <button class="btn btn-outline" style="font-size:12px;padding:6px 12px;margin-left:auto" onclick="tpl2ExportCsv()">Export CSV</button>
+      <span class="count" id="tpl2-rowcount">—</span>
+    </div>
+    <div class="rl1-table">
+      <table style="width:100%">
+        <thead><tr>
+          <th>Date</th>
+          <th class="n">USDC reçu</th>
+          <th class="n">FX Binance</th>
+          <th>Source FX</th>
+          <th class="n">MRU @ Binance</th>
+          <th class="n">MRU @ 39,5</th>
+          <th class="n">Gain L2</th>
+          <th>Ref ETH</th>
+        </tr></thead>
+        <tbody id="tpl2-tbody"><tr><td colspan="8" style="padding:24px;text-align:center;color:var(--muted)">Chargement…</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ══ TAB 9: MRU/USD EXCHANGE (Binance P2P) ══ -->
+<div id="p9" class="page">
+  <div class="rl1-wrap">
+    <h2 style="margin:0 0 4px;font-size:18px">Compte MRUUSDExchange — Binance P2P USDT → MRU</h2>
+    <p style="color:var(--muted);font-size:12px;margin:0 0 16px">
+      Cadorim vend les USDT (reçus de TerraPay/Bridge/Ria USD) contre MRU via Binance P2P. Chaque vente a son taux propre.
+      Ce compte trace les flux et donne le <b>taux FX réel quotidien MRU/USDT</b> utilisé pour calculer le gain économique des partners en USD.
+    </p>
+    <div id="ex-banner" class="rl1-banner GREEN">
+      <span class="badge">P2P</span>
+      <span id="ex-banner-msg">Chargement…</span>
+    </div>
+    <div class="rl1-cards" style="grid-template-columns:repeat(5,1fr)">
+      <div class="rl1-card"><div class="lbl">USDT vendu</div><div class="vl" id="ex-c-usdt">—</div><div class="sub" id="ex-c-usdt-sub">total Q1</div></div>
+      <div class="rl1-card"><div class="lbl">MRU reçu</div><div class="vl" id="ex-c-mru">—</div><div class="sub">via Binance P2P</div></div>
+      <div class="rl1-card green"><div class="lbl">Taux moyen pondéré</div><div class="vl" id="ex-c-rate">—</div><div class="sub">MRU/USDT</div></div>
+      <div class="rl1-card"><div class="lbl">Taux min - max</div><div class="vl" id="ex-c-range" style="font-size:14px">—</div><div class="sub">volatilité</div></div>
+      <div class="rl1-card"><div class="lbl">Frais total</div><div class="vl" id="ex-c-fees">—</div><div class="sub">USDT taker</div></div>
+    </div>
+
+    <h3 style="margin:24px 0 10px;font-size:15px">Par mois</h3>
+    <div class="rl1-table">
+      <table style="width:100%">
+        <thead><tr>
+          <th>Mois</th>
+          <th class="n">Ventes</th>
+          <th class="n">USDT vendu</th>
+          <th class="n">MRU reçu</th>
+          <th class="n">Taux moyen</th>
+        </tr></thead>
+        <tbody id="ex-month-tbody"><tr><td colspan="5" style="padding:24px;text-align:center;color:var(--muted)">—</td></tr></tbody>
+      </table>
+    </div>
+
+    <h3 style="margin:24px 0 10px;font-size:15px">Détail par jour (agrégat)</h3>
+    <div class="rl1-filters">
+      <label style="font-size:12px;color:var(--muted)">Mois</label>
+      <select id="ex-flt-month" onchange="exRenderDays()">
+        <option value="">Tous</option>
+      </select>
+      <button class="btn btn-outline" style="font-size:12px;padding:6px 12px;margin-left:auto" onclick="exExportCsv()">Export CSV</button>
+      <span class="count" id="ex-rowcount">—</span>
+    </div>
+    <div class="rl1-table">
+      <table style="width:100%">
+        <thead><tr>
+          <th>Date</th>
+          <th class="n">N ventes</th>
+          <th class="n">USDT vendu</th>
+          <th class="n">MRU reçu</th>
+          <th class="n">Taux moyen</th>
+          <th class="n">Frais</th>
+        </tr></thead>
+        <tbody id="ex-day-tbody"><tr><td colspan="6" style="padding:24px;text-align:center;color:var(--muted)">Chargement…</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ══ TAB 10: CHECK TERRAPAY L1 ══ -->
+<div id="p10" class="page">
+  <div class="rl1-wrap">
+    <h2 style="margin:0 0 4px;font-size:18px">Check TerraPay L1 — vue mensuelle + per-jour</h2>
+    <p style="color:var(--muted);font-size:12px;margin:0 0 16px">
+      Layer 1 TerraPay = transactions API confirmées automatiquement. <b>FX interne 39,5</b>, <b>commission 0,5%</b> du montant USD = revenu/coût TerraPay.
+      Aucun statut "missing" car chaque TPFN est confirmé par construction.
+    </p>
+
+    <!-- HEADLINE CARDS (totaux période) -->
+    <div class="rl1-cards" style="grid-template-columns:repeat(5,1fr)">
+      <div class="rl1-card"><div class="lbl">Total transactions</div><div class="vl" id="tpl1-c-ntx">—</div><div class="sub" id="tpl1-c-ndays">sur N jours</div></div>
+      <div class="rl1-card"><div class="lbl">Total USD</div><div class="vl" id="tpl1-c-usd">—</div><div class="sub" id="tpl1-c-usd-sub">volume</div></div>
+      <div class="rl1-card"><div class="lbl">Commission 0,5%</div><div class="vl" id="tpl1-c-comm">—</div><div class="sub">USD (revenu TerraPay)</div></div>
+      <div class="rl1-card green"><div class="lbl">MRU @ 39,5</div><div class="vl" id="tpl1-c-mru">—</div><div class="sub">payé aux clients (estimé)</div></div>
+      <div class="rl1-card"><div class="lbl">Moyenne/jour</div><div class="vl" id="tpl1-c-avg">—</div><div class="sub" id="tpl1-c-avg-sub">tx · USD/jour</div></div>
+    </div>
+
+    <!-- MONTHLY TABLE -->
+    <h3 style="margin:24px 0 10px;font-size:15px">Détail par mois</h3>
+    <div class="rl1-table">
+      <table style="width:100%">
+        <thead><tr>
+          <th>Mois</th>
+          <th class="n">#tx</th>
+          <th class="n">#jours</th>
+          <th class="n">Total USD</th>
+          <th class="n">Commission 0,5%</th>
+          <th class="n">MRU @ 39,5</th>
+          <th class="n">tx/jour</th>
+          <th class="n">USD/jour</th>
+        </tr></thead>
+        <tbody id="tpl1-month-tbody"><tr><td colspan="8" style="padding:24px;text-align:center;color:var(--muted)">—</td></tr></tbody>
+      </table>
+    </div>
+
+    <!-- DATE PICKER + PER-DATE DETAIL -->
+    <h3 style="margin:24px 0 10px;font-size:15px">Détail par jour (sélection)</h3>
+    <div class="rl1-picker">
+      <label style="font-size:13px;color:var(--muted)">Date</label>
+      <input type="date" id="tpl1-date">
+      <button class="btn btn-outline" style="font-size:12px;padding:6px 12px" onclick="tpl1PrevDay()">‹ Jour précédent</button>
+      <button class="btn btn-outline" style="font-size:12px;padding:6px 12px" onclick="tpl1NextDay()">Jour suivant ›</button>
+      <button class="btn btn-outline" style="font-size:12px;padding:6px 12px;margin-left:auto" onclick="tpl1ExportCsv()">Export CSV</button>
+    </div>
+    <div id="tpl1-banner" class="rl1-banner GREEN" style="margin-top:8px">
+      <span class="badge">—</span>
+      <span id="tpl1-banner-msg">Sélectionne une date</span>
+    </div>
+    <div class="rl1-cards" style="grid-template-columns:repeat(4,1fr);margin-top:12px">
+      <div class="rl1-card"><div class="lbl">TerraPay (jour)</div><div class="vl" id="tpl1-d-tp">—</div><div class="sub" id="tpl1-d-tp-sub">tx · USD</div></div>
+      <div class="rl1-card"><div class="lbl">Cadorim (jour)</div><div class="vl" id="tpl1-d-cad">—</div><div class="sub" id="tpl1-d-cad-sub">tx · MRU</div></div>
+      <div class="rl1-card green"><div class="lbl">Matchées TPFN</div><div class="vl" id="tpl1-d-match">—</div><div class="sub" id="tpl1-d-match-sub">/ possible</div></div>
+      <div class="rl1-card"><div class="lbl">Commission USD</div><div class="vl" id="tpl1-d-comm">—</div><div class="sub">0,5% × USD du jour</div></div>
+    </div>
+    <div class="rl1-filters">
+      <label style="font-size:12px;color:var(--muted)">Status</label>
+      <select id="tpl1-flt-status" onchange="tpl1RenderTable()">
+        <option value="">Tous</option>
+        <option value="MISSING_CADORIM">Missing Cadorim</option>
+        <option value="MISSING_TERRAPAY">Missing TerraPay</option>
+        <option value="MATCH_DELAYED">Match delayed</option>
+        <option value="AMOUNT_MISMATCH">Amount mismatch</option>
+        <option value="MATCH">Match</option>
+      </select>
+      <span class="count" id="tpl1-rowcount">—</span>
+    </div>
+    <div class="rl1-table">
+      <table style="width:100%">
+        <thead><tr>
+          <th>Status</th><th>TPFN</th>
+          <th>Date TP</th><th>Date Cad</th>
+          <th class="n">USD TP</th><th class="n">MRU Cad</th>
+          <th class="n">FX</th>
+          <th class="n">Fee USD</th><th class="n">Frais Cad</th>
+          <th>Type</th><th class="n">Délai</th>
+        </tr></thead>
+        <tbody id="tpl1-tbody"><tr><td colspan="11" style="padding:24px;text-align:center;color:var(--muted)">Chargement…</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+// ══════════════════════════════════════════════════════════════
+// STATE + SIMULATION DATA
+// ══════════════════════════════════════════════════════════════
+let partners=[],channels=[],settlements=[],plafonds=[],engineResults=null;
+const SIM_CONFIG={"layer1":[
+{"code":"sim_terrapay","name":"TerraPay (sim)","is_international":true,"currency":"USD","commission_type":"percentage","commission_rate":"0.005","commission_fixed":"0","fx_partner_rate":"39.0","fx_cadorim_rate":"39.5","fx_market_rate":"39.2","channels":[{"code":"sim_sedad","cost_payout":"50","cost_type":"fixed"},{"code":"sim_click","cost_payout":"30","cost_type":"fixed"}]},
+{"code":"sim_ria","name":"Ria (sim)","is_international":true,"currency":"EUR","commission_type":"percentage","commission_rate":"0.01","commission_fixed":"0","fx_partner_rate":"42.0","fx_cadorim_rate":"42.8","fx_market_rate":"42.5","channels":[{"code":"sim_agent_caisse","cost_payout":"30","cost_type":"per_transaction"}]},
+{"code":"sim_wallet","name":"Cadorim Wallet (sim)","is_international":false,"currency":"MRU","commission_type":"fixed","commission_rate":"0","commission_fixed":"0","fx_partner_rate":"0","fx_cadorim_rate":"0","fx_market_rate":"0","channels":[{"code":"sim_internal","cost_payout":"0","cost_type":"fixed"},{"code":"sim_sedad","cost_payout":"50","cost_type":"fixed"}]},
+{"code":"sim_sndp","name":"SNDP (sim B2C)","is_international":false,"currency":"MRU","commission_type":"percentage","commission_rate":"0.002","commission_fixed":"0","fx_partner_rate":"0","fx_cadorim_rate":"0","fx_market_rate":"0","channels":[{"code":"sim_sedad","cost_payout":"50","cost_type":"fixed"},{"code":"sim_agent_caisse","cost_payout":"30","cost_type":"per_transaction"}]},
+{"code":"sim_agent","name":"Agent Ops (sim)","is_international":false,"currency":"MRU","commission_type":"fixed","commission_rate":"0","commission_fixed":"0","fx_partner_rate":"0","fx_cadorim_rate":"0","fx_market_rate":"0","channels":[{"code":"sim_agent_caisse","cost_payout":"30","cost_type":"per_transaction"}]}
+],"layer2":[
+{"partner_code":"sim_terrapay","bank_code":"sim_bmi","currency":"USD","fx_settlement_rate":"39.3","fx_reference_rate":"39.0"},
+{"partner_code":"sim_ria","bank_code":"sim_bmi","currency":"EUR","fx_settlement_rate":"42.6","fx_reference_rate":"42.0"}
+],"plafonds":[
+{"channel":"sim_sedad","partner":"sim_terrapay","plafond":126000,"priority":1},
+{"channel":"sim_sedad","partner":"sim_sndp","plafond":7500,"priority":3},
+{"channel":"sim_sedad","partner":"sim_wallet","plafond":9000,"priority":4},
+{"channel":"sim_click","partner":"sim_terrapay","plafond":70000,"priority":1}
+]};
+const SIM_INITIAL={cash:{"caisse_mboirick":200000,"caisse_tidjany":150000,"caisse_babe":100000},wallet:{"sedad":150000,"masrvi":80000,"bankily":50000,"click":70000},bank:{"sim_bmi":200000},client_float:50000,working_capital:950000,
+opening_receivable:{"sim_terrapay":{foreign:12000,currency:"USD",mru:468000},"sim_ria":{foreign:3500,currency:"EUR",mru:147000}}};
+const SIM_TXS=[
+{"id":"T001","date":"2026-01-01","Par_l":"sim_terrapay","Cur_k":"USD","Amount_j":500,"Amount_mru_h":19500,"Local_Par_n":"sim_sedad","type":"international"},{"id":"T002","date":"2026-01-01","Par_l":"sim_terrapay","Cur_k":"USD","Amount_j":800,"Amount_mru_h":31200,"Local_Par_n":"sim_click","type":"international"},{"id":"T003","date":"2026-01-02","Par_l":"sim_terrapay","Cur_k":"USD","Amount_j":1200,"Amount_mru_h":46800,"Local_Par_n":"sim_sedad","type":"international"},{"id":"T004","date":"2026-01-02","Par_l":"sim_ria","Cur_k":"EUR","Amount_j":300,"Amount_mru_h":12840,"Local_Par_n":"sim_agent_caisse","type":"international"},{"id":"T005","date":"2026-01-03","Par_l":"sim_ria","Cur_k":"EUR","Amount_j":600,"Amount_mru_h":25680,"Local_Par_n":"sim_agent_caisse","type":"international"},{"id":"T006","date":"2026-01-03","Par_l":"sim_wallet","Cur_k":"MRU","Amount_j":5000,"Amount_mru_h":5000,"Local_Par_n":"sim_internal","type":"wallet_p2p"},{"id":"T007","date":"2026-01-04","Par_l":"sim_wallet","Cur_k":"MRU","Amount_j":8000,"Amount_mru_h":8000,"Local_Par_n":"sim_sedad","type":"wallet_cashout"},{"id":"T008","date":"2026-01-05","Par_l":"sim_sndp","Cur_k":"MRU","Amount_j":50000,"Amount_mru_h":50000,"Local_Par_n":"sim_internal","caisse":"caisse_babe","type":"b2c_deposit"},{"id":"T009","date":"2026-01-06","Par_l":"sim_sndp","Cur_k":"MRU","Amount_j":12000,"Amount_mru_h":12000,"Local_Par_n":"sim_sedad","type":"b2c_payout"},{"id":"T010","date":"2026-01-06","Par_l":"sim_sndp","Cur_k":"MRU","Amount_j":8000,"Amount_mru_h":8000,"Local_Par_n":"sim_agent_caisse","type":"b2c_payout"},{"id":"T011","date":"2026-01-07","Par_l":"sim_sndp","Cur_k":"MRU","Amount_j":15000,"Amount_mru_h":15000,"Local_Par_n":"sim_sedad","type":"b2c_payout"},
+{"id":"T012","date":"2026-01-08","Par_l":"sim_terrapay","Cur_k":"USD","Amount_j":2000,"Amount_mru_h":78000,"Local_Par_n":"sim_sedad","type":"international"},{"id":"T013","date":"2026-01-09","Par_l":"sim_terrapay","Cur_k":"USD","Amount_j":350,"Amount_mru_h":13650,"Local_Par_n":"sim_click","type":"international"},{"id":"T014","date":"2026-01-10","Par_l":"sim_ria","Cur_k":"EUR","Amount_j":450,"Amount_mru_h":19260,"Local_Par_n":"sim_agent_caisse","type":"international"},{"id":"T015","date":"2026-01-11","Par_l":"sim_ria","Cur_k":"EUR","Amount_j":700,"Amount_mru_h":29960,"Local_Par_n":"sim_agent_caisse","type":"international"},{"id":"T016","date":"2026-01-12","Par_l":"sim_agent","Cur_k":"MRU","Amount_j":10000,"Amount_mru_h":10000,"Local_Par_n":"sim_agent_caisse","type":"agent_cashout"},{"id":"T017","date":"2026-01-13","Par_l":"sim_agent","Cur_k":"MRU","Amount_j":15000,"Amount_mru_h":15000,"Local_Par_n":"sim_agent_caisse","type":"agent_cashout"},{"id":"T018","date":"2026-01-14","Par_l":"sim_wallet","Cur_k":"MRU","Amount_j":3000,"Amount_mru_h":3000,"Local_Par_n":"sim_internal","type":"wallet_p2p"},{"id":"T019","date":"2026-01-15","Par_l":"sim_wallet","Cur_k":"MRU","Amount_j":12000,"Amount_mru_h":12000,"Local_Par_n":"sim_sedad","type":"wallet_cashout"},{"id":"T020","date":"2026-01-16","Par_l":"sim_terrapay","Cur_k":"USD","Amount_j":900,"Amount_mru_h":35100,"Local_Par_n":"sim_sedad","type":"international"},{"id":"T021","date":"2026-01-17","Par_l":"sim_ria","Cur_k":"EUR","Amount_j":500,"Amount_mru_h":21400,"Local_Par_n":"sim_agent_caisse","type":"international"},
+{"id":"T022","date":"2026-01-22","Par_l":"sim_terrapay","Cur_k":"USD","Amount_j":1500,"Amount_mru_h":58500,"Local_Par_n":"sim_click","type":"international"},{"id":"T023","date":"2026-01-23","Par_l":"sim_terrapay","Cur_k":"USD","Amount_j":750,"Amount_mru_h":29250,"Local_Par_n":"sim_sedad","type":"international"},{"id":"T024","date":"2026-01-25","Par_l":"sim_sndp","Cur_k":"MRU","Amount_j":40000,"Amount_mru_h":40000,"Local_Par_n":"sim_internal","caisse":"caisse_babe","type":"b2c_deposit"},{"id":"T025","date":"2026-01-26","Par_l":"sim_sndp","Cur_k":"MRU","Amount_j":10000,"Amount_mru_h":10000,"Local_Par_n":"sim_sedad","type":"b2c_payout"},{"id":"T026","date":"2026-01-27","Par_l":"sim_sndp","Cur_k":"MRU","Amount_j":20000,"Amount_mru_h":20000,"Local_Par_n":"sim_agent_caisse","type":"b2c_payout"},{"id":"T027","date":"2026-01-28","Par_l":"sim_agent","Cur_k":"MRU","Amount_j":20000,"Amount_mru_h":20000,"Local_Par_n":"sim_agent_caisse","caisse":"caisse_mboirick","type":"agent_refund"},
+{"id":"T028","date":"2026-02-01","Par_l":"sim_terrapay","Cur_k":"USD","Amount_j":1800,"Amount_mru_h":70200,"Local_Par_n":"sim_sedad","type":"international"},{"id":"T029","date":"2026-02-03","Par_l":"sim_ria","Cur_k":"EUR","Amount_j":800,"Amount_mru_h":34240,"Local_Par_n":"sim_agent_caisse","type":"international"},{"id":"T030","date":"2026-02-05","Par_l":"sim_terrapay","Cur_k":"USD","Amount_j":600,"Amount_mru_h":23400,"Local_Par_n":"sim_click","type":"international"},{"id":"T031","date":"2026-02-07","Par_l":"sim_wallet","Cur_k":"MRU","Amount_j":7000,"Amount_mru_h":7000,"Local_Par_n":"sim_internal","type":"wallet_p2p"},{"id":"T032","date":"2026-02-08","Par_l":"sim_wallet","Cur_k":"MRU","Amount_j":6000,"Amount_mru_h":6000,"Local_Par_n":"sim_sedad","type":"wallet_cashout"},{"id":"T033","date":"2026-02-10","Par_l":"sim_ria","Cur_k":"EUR","Amount_j":550,"Amount_mru_h":23540,"Local_Par_n":"sim_agent_caisse","type":"international"},{"id":"T034","date":"2026-02-12","Par_l":"sim_terrapay","Cur_k":"USD","Amount_j":400,"Amount_mru_h":15600,"Local_Par_n":"sim_sedad","type":"international"},{"id":"T035","date":"2026-02-14","Par_l":"sim_agent","Cur_k":"MRU","Amount_j":8000,"Amount_mru_h":8000,"Local_Par_n":"sim_agent_caisse","type":"agent_cashout"},{"id":"T036","date":"2026-02-15","Par_l":"sim_agent","Cur_k":"MRU","Amount_j":12000,"Amount_mru_h":12000,"Local_Par_n":"sim_agent_caisse","caisse":"caisse_tidjany","type":"agent_refund"},
+{"id":"T037","date":"2026-03-01","Par_l":"sim_terrapay","Cur_k":"USD","Amount_j":2500,"Amount_mru_h":97500,"Local_Par_n":"sim_sedad","type":"international"},{"id":"T038","date":"2026-03-03","Par_l":"sim_ria","Cur_k":"EUR","Amount_j":900,"Amount_mru_h":38520,"Local_Par_n":"sim_agent_caisse","type":"international"},{"id":"T039","date":"2026-03-05","Par_l":"sim_terrapay","Cur_k":"USD","Amount_j":1100,"Amount_mru_h":42900,"Local_Par_n":"sim_click","type":"international"},{"id":"T040","date":"2026-03-06","Par_l":"sim_sndp","Cur_k":"MRU","Amount_j":60000,"Amount_mru_h":60000,"Local_Par_n":"sim_internal","caisse":"caisse_babe","type":"b2c_deposit"},{"id":"T041","date":"2026-03-07","Par_l":"sim_sndp","Cur_k":"MRU","Amount_j":18000,"Amount_mru_h":18000,"Local_Par_n":"sim_sedad","type":"b2c_payout"},{"id":"T042","date":"2026-03-08","Par_l":"sim_sndp","Cur_k":"MRU","Amount_j":22000,"Amount_mru_h":22000,"Local_Par_n":"sim_agent_caisse","type":"b2c_payout"},{"id":"T043","date":"2026-03-09","Par_l":"sim_sndp","Cur_k":"MRU","Amount_j":10000,"Amount_mru_h":10000,"Local_Par_n":"sim_sedad","type":"b2c_payout"},{"id":"T044","date":"2026-03-10","Par_l":"sim_wallet","Cur_k":"MRU","Amount_j":4000,"Amount_mru_h":4000,"Local_Par_n":"sim_internal","type":"wallet_p2p"},{"id":"T045","date":"2026-03-12","Par_l":"sim_wallet","Cur_k":"MRU","Amount_j":9000,"Amount_mru_h":9000,"Local_Par_n":"sim_sedad","type":"wallet_cashout"},{"id":"T046","date":"2026-03-15","Par_l":"sim_terrapay","Cur_k":"USD","Amount_j":3000,"Amount_mru_h":117000,"Local_Par_n":"sim_sedad","type":"international"},{"id":"T047","date":"2026-03-18","Par_l":"sim_ria","Cur_k":"EUR","Amount_j":1000,"Amount_mru_h":42800,"Local_Par_n":"sim_agent_caisse","type":"international"},{"id":"T048","date":"2026-03-20","Par_l":"sim_terrapay","Cur_k":"USD","Amount_j":650,"Amount_mru_h":25350,"Local_Par_n":"sim_click","type":"international"},{"id":"T049","date":"2026-03-22","Par_l":"sim_agent","Cur_k":"MRU","Amount_j":5000,"Amount_mru_h":5000,"Local_Par_n":"sim_agent_caisse","type":"agent_cashout"},{"id":"T050","date":"2026-03-25","Par_l":"sim_agent","Cur_k":"MRU","Amount_j":18000,"Amount_mru_h":18000,"Local_Par_n":"sim_agent_caisse","caisse":"caisse_mboirick","type":"agent_refund"}
+];
+const SIM_SETT=[{"id":"S001","date_s":"2026-01-20","Par_l":"sim_terrapay","Bank_t":"sim_bmi","Amount_s":4850,"Cur_k":"USD","fx_settlement_rate":39.3,"fx_reference_rate":39.0},{"id":"S002","date_s":"2026-01-28","Par_l":"sim_ria","Bank_t":"sim_bmi","Amount_s":2550,"Cur_k":"EUR","fx_settlement_rate":42.6,"fx_reference_rate":42.0},{"id":"S003","date_s":"2026-02-05","Par_l":"sim_terrapay","Bank_t":"sim_bmi","Amount_s":3150,"Cur_k":"USD","fx_settlement_rate":39.4,"fx_reference_rate":39.0},{"id":"S004","date_s":"2026-02-25","Par_l":"sim_terrapay","Bank_t":"sim_bmi","Amount_s":2800,"Cur_k":"USD","fx_settlement_rate":39.5,"fx_reference_rate":39.0},{"id":"S005","date_s":"2026-03-01","Par_l":"sim_ria","Bank_t":"sim_bmi","Amount_s":1350,"Cur_k":"EUR","fx_settlement_rate":42.7,"fx_reference_rate":42.0},{"id":"S006","date_s":"2026-03-20","Par_l":"sim_terrapay","Bank_t":"sim_bmi","Amount_s":3600,"Cur_k":"USD","fx_settlement_rate":39.6,"fx_reference_rate":39.0}];
+const SIM_WD=[{"id":"W001","date":"2026-01-25","bank":"sim_bmi","caisse":"caisse_babe","amount":80000},{"id":"W002","date":"2026-02-15","bank":"sim_bmi","caisse":"caisse_mboirick","amount":100000},{"id":"W003","date":"2026-03-10","bank":"sim_bmi","caisse":"caisse_tidjany","amount":60000}];
+
+// ══════════════════════════════════════════════════════════════
+// TAB SWITCHING
+// ══════════════════════════════════════════════════════════════
+function sw(i){document.querySelectorAll('.page').forEach((p,j)=>p.classList.toggle('active',j===i));document.querySelectorAll('.tab').forEach((t,j)=>t.classList.toggle('active',j===i));}
+function toggle(id){const el=document.getElementById(id);if(!el)return;document.querySelectorAll('.drill.open').forEach(d=>{if(d.id!==id)d.classList.remove('open')});el.classList.toggle('open');}
+
+// ══════════════════════════════════════════════════════════════
+// SETUP TABLE RENDERING
+// ══════════════════════════════════════════════════════════════
+function renderPartners(){const t=document.getElementById('partners-body');t.innerHTML='';partners.forEach((p,i)=>{const intl=p.is_international;t.innerHTML+=`<tr><td><input type="text" value="${p.code}" onchange="partners[${i}].code=this.value"></td><td><input type="text" value="${p.name}" onchange="partners[${i}].name=this.value"></td><td><input type="checkbox" ${intl?'checked':''} onchange="partners[${i}].is_international=this.checked;renderPartners()"></td><td><select onchange="partners[${i}].currency=this.value">${['USD','EUR','USDC','MRU'].map(c=>`<option ${c===p.currency?'selected':''}>${c}</option>`).join('')}</select></td><td><select onchange="partners[${i}].commission_type=this.value">${['percentage','fixed'].map(t=>`<option ${t===p.commission_type?'selected':''}>${t}</option>`).join('')}</select></td><td><input type="number" step="0.001" value="${p.commission_rate}" onchange="partners[${i}].commission_rate=this.value" ${p.commission_type==='fixed'?'disabled':''}></td><td><input type="number" step="1" value="${p.commission_fixed}" onchange="partners[${i}].commission_fixed=this.value" ${p.commission_type==='percentage'?'disabled':''}></td><td><input type="number" step="0.1" value="${p.fx_partner_rate}" onchange="partners[${i}].fx_partner_rate=this.value" ${!intl?'disabled':''}></td><td><input type="number" step="0.1" value="${p.fx_cadorim_rate}" onchange="partners[${i}].fx_cadorim_rate=this.value" ${!intl?'disabled':''}></td><td><input type="number" step="0.1" value="${p.fx_market_rate}" onchange="partners[${i}].fx_market_rate=this.value" ${!intl?'disabled':''}></td><td><button class="btn-remove" onclick="partners.splice(${i},1);renderPartners()">&times;</button></td></tr>`});}
+function renderChannels(){const t=document.getElementById('channels-body');t.innerHTML='';channels.forEach((c,i)=>{t.innerHTML+=`<tr><td><select onchange="channels[${i}].partner=this.value">${partners.map(p=>`<option ${p.code===c.partner?'selected':''}>${p.code}</option>`).join('')}</select></td><td><input type="text" value="${c.code}" onchange="channels[${i}].code=this.value"></td><td><input type="number" step="1" value="${c.cost_payout}" onchange="channels[${i}].cost_payout=this.value"></td><td><select onchange="channels[${i}].cost_type=this.value">${['fixed','percentage','per_transaction'].map(t=>`<option ${t===c.cost_type?'selected':''}>${t}</option>`).join('')}</select></td><td><button class="btn-remove" onclick="channels.splice(${i},1);renderChannels()">&times;</button></td></tr>`});}
+function renderSettlements(){const t=document.getElementById('settlements-body');t.innerHTML='';settlements.forEach((s,i)=>{t.innerHTML+=`<tr><td><input type="text" value="${s.partner_code}" onchange="settlements[${i}].partner_code=this.value"></td><td><input type="text" value="${s.bank_code}" onchange="settlements[${i}].bank_code=this.value"></td><td><select onchange="settlements[${i}].currency=this.value">${['USD','EUR','USDC'].map(c=>`<option ${c===s.currency?'selected':''}>${c}</option>`).join('')}</select></td><td><input type="number" step="0.1" value="${s.fx_settlement_rate}" onchange="settlements[${i}].fx_settlement_rate=this.value"></td><td><input type="number" step="0.1" value="${s.fx_reference_rate}" onchange="settlements[${i}].fx_reference_rate=this.value"></td><td><button class="btn-remove" onclick="settlements.splice(${i},1);renderSettlements()">&times;</button></td></tr>`});}
+function addPartner(){partners.push({code:'',name:'',is_international:false,currency:'MRU',commission_type:'percentage',commission_rate:'0',commission_fixed:'0',fx_partner_rate:'0',fx_cadorim_rate:'0',fx_market_rate:'0'});renderPartners();}
+function addChannel(){channels.push({partner:partners[0]?.code||'',code:'',cost_payout:'0',cost_type:'fixed'});renderChannels();}
+function addSettlement(){settlements.push({partner_code:'',bank_code:'',currency:'USD',fx_settlement_rate:'0',fx_reference_rate:'0'});renderSettlements();}
+function getWalletChannelCodes(){return Object.keys(SIM_INITIAL.wallet||{}).map(k=>'sim_'+k);}
+function renderLiquidityOverview(){
+const el=document.getElementById('liquidity-overview');if(!el)return;
+const wKeys=Object.keys(SIM_INITIAL.wallet||{});
+if(!wKeys.length){el.innerHTML='<p style="color:var(--muted)">No wallet channels</p>';return;}
+// 1A: Balance table
+let h=`<table><thead><tr><th>Channel</th><th class="n">Balance (MRU)</th><th>Status</th></tr></thead><tbody>`;
+wKeys.forEach(k=>{h+=`<tr><td>sim_${k}</td><td class="n">${fmt(SIM_INITIAL.wallet[k])}</td><td><span class="pos">Active</span></td></tr>`;});
+h+=`</tbody></table>`;
+// 1B: Historical usage for ALL wallets
+h+=`<h3 style="margin-top:14px;font-size:13px">Historical Usage Distribution</h3>`;
+const usage={};
+SIM_TXS.forEach(tx=>{const pool=getPool(tx.Local_Par_n);if(pool.type!=='wallet')return;
+const ch=tx.Local_Par_n;if(!usage[ch])usage[ch]={};usage[ch][tx.Par_l]=(usage[ch][tx.Par_l]||0)+V(tx.Amount_mru_h);});
+wKeys.forEach(wk=>{
+const ch='sim_'+wk;const balance=SIM_INITIAL.wallet[wk];const pu=usage[ch];
+h+=`<div style="margin:8px 0;padding:10px 14px;background:var(--surface-alt);border-radius:6px;font-size:12px"><strong>${ch}</strong> (${fmt(balance)} MRU available):`;
+if(!pu||Object.keys(pu).length===0){h+=`<div style="margin-top:4px;color:var(--muted);font-style:italic">No historical usage — set plafond manually</div></div>`;return;}
+const total=Object.values(pu).reduce((a,v)=>a+v,0);
+h+=`<div style="margin-top:6px">`;
+Object.entries(pu).sort((a,b)=>b[1]-a[1]).forEach(([par,vol])=>{
+const pct=total>0?Math.round(vol/total*100):0;const suggested=Math.round(balance*pct/100);
+h+=`<div style="display:flex;align-items:center;gap:6px;margin:3px 0;height:22px"><span style="width:90px;font-weight:500">${par.replace('sim_','')}</span><div style="flex:1;height:18px;background:var(--border);border-radius:3px;overflow:hidden"><div style="width:${Math.min(pct,100)}%;height:100%;background:var(--accent)"></div></div><span style="width:36px;text-align:right;font-weight:600">${pct}%</span><span style="width:90px;text-align:right;color:var(--muted)">${fmt(vol)} vol</span><span style="width:170px;text-align:right;color:var(--muted);font-style:italic">→ ${pct}% × ${fmt(balance)} = <b>${fmt(suggested)}</b></span></div>`;});
+h+=`<div style="display:flex;align-items:center;gap:6px;margin-top:4px;padding-top:4px;border-top:1px solid var(--border);font-weight:600"><span style="width:90px">TOTAL</span><span style="flex:1"></span><span style="width:36px;text-align:right">100%</span><span style="width:90px;text-align:right">${fmt(total)} vol</span><span style="width:170px;text-align:right">→ ${fmt(balance)} allocated</span></div>`;
+h+=`</div></div>`;});
+el.innerHTML=h;}
+
+function fmtN(n){return Math.round(n||0).toLocaleString('fr-FR');}
+function handlePlafondBlur(el,idx){const raw=parseInt(String(el.value).replace(/\s/g,''),10)||0;plafonds[idx].plafond=Math.max(0,raw);el.value=fmtN(plafonds[idx].plafond);updateValidation();}
+function handlePctBlur(el,idx){const pct=parseFloat(String(el.value).replace('%',''))||0;const chKey=plafonds[idx].channel.replace('sim_','');const bal=SIM_INITIAL.wallet[chKey]||0;plafonds[idx].plafond=Math.round(pct/100*bal);el.value=Math.round(pct)+'%';renderPlafonds();}
+function updateValidation(){
+const vEl=document.getElementById('plafond-validation');if(!vEl)return;
+const wKeys=Object.keys(SIM_INITIAL.wallet||{});const segColors=['#2563EB','#059669','#D97706','#7C3AED','#DC2626','#64748b','#14b8a6'];
+let vh='';
+wKeys.forEach(wk=>{const ch='sim_'+wk;const cBal=SIM_INITIAL.wallet[wk];
+const rules=plafonds.filter(p=>p.channel===ch);const alloc=rules.reduce((a,p)=>a+V(p.plafond),0);
+const reserve=cBal-alloc;const reservePct=cBal>0?Math.round(reserve/cBal*100):0;
+const parts=rules.filter(p=>V(p.plafond)>0).map(r=>r.partner.replace('sim_','')+' '+fmtN(V(r.plafond))).join(' + ')||'(no rules)';
+const over=reserve<0;const empty=rules.length===0;
+// Stacked bar
+let bar='<div style="display:flex;height:20px;border-radius:4px;overflow:hidden;border:1px solid var(--border);margin:4px 0">';
+rules.forEach((r,ri)=>{const w=cBal>0?Math.min(V(r.plafond)/cBal*100,100):0;if(w>0)bar+=`<div style="width:${w}%;background:${segColors[ri%segColors.length]};display:flex;align-items:center;justify-content:center;font-size:9px;color:#fff;font-weight:600;overflow:hidden">${r.partner.replace('sim_','')}</div>`;});
+if(reserve>0){const rw=reserve/cBal*100;bar+=`<div style="width:${rw}%;background:var(--surface-alt)"></div>`;}
+if(over){bar+=`<div style="width:4px;background:var(--red)"></div>`;}
+bar+='</div>';
+// Status
+let statusTxt,statusColor;
+if(over){statusTxt=`<b>Reserve: ${fmtN(reserve)} MRU ✗ OVER-ALLOCATED</b> (reduce by ${fmtN(-reserve)})`;statusColor='var(--red)';}
+else if(empty){statusTxt=`Reserve: ${fmtN(reserve)} MRU ⚠ UNPROTECTED`;statusColor='var(--yellow)';}
+else if(reserve===0){statusTxt=`Reserve: 0 MRU ✓ Fully allocated`;statusColor='var(--green)';}
+else{const bufPct=Math.round(reserve/cBal*100);statusTxt=`Reserve: ${fmtN(reserve)} MRU ✓ (${bufPct}% buffer)`;statusColor=bufPct<10?'var(--yellow)':'var(--green)';}
+vh+=`<div style="margin:10px 0;padding:10px 14px;background:var(--surface-alt);border-radius:6px;font-size:12px">
+<div style="font-weight:600;margin-bottom:2px">${ch} (${fmtN(cBal)} MRU):</div>
+${bar}
+<div>Allocated: ${parts} = ${fmtN(alloc)}</div>
+<div style="color:${statusColor};font-weight:500">${statusTxt}</div></div>`;});
+vEl.innerHTML=vh;}
+
+function renderPlafonds(){const t=document.getElementById('plafonds-body');t.innerHTML='';
+const priCol=['','#059669','#2563EB','#CA8A04','#D97706','#DC2626'];
+const wChans=getWalletChannelCodes();
+plafonds.forEach((p,i)=>{
+const chKey=p.channel.replace('sim_','');const cBal=SIM_INITIAL.wallet[chKey]||0;
+const pctVal=cBal>0&&V(p.plafond)>0?Math.round(V(p.plafond)/cBal*100):0;
+const st=V(p.plafond)===0?'<span class="neg" style="font-weight:600">Blocked</span>':'<span class="pos">Active</span>';
+t.innerHTML+=`<tr><td><select onchange="plafonds[${i}].channel=this.value;renderPlafonds()">${wChans.map(c=>`<option ${c===p.channel?'selected':''}>${c}</option>`).join('')}</select></td><td><select onchange="checkDupPlafond(${i},this);renderPlafonds()">${partners.map(x=>`<option ${x.code===p.partner?'selected':''}>${x.code}</option>`).join('')}</select></td><td><input type="text" inputmode="numeric" value="${fmtN(V(p.plafond))}" onfocus="this.value=this.value.replace(/\\s/g,'')" onblur="handlePlafondBlur(this,${i})" style="text-align:right"></td><td><input type="text" inputmode="numeric" value="${pctVal}%" onfocus="this.value=this.value.replace('%','')" onblur="handlePctBlur(this,${i})" style="text-align:right;width:65px"></td><td><span style="display:inline-block;width:20px;height:20px;border-radius:50%;background:${priCol[p.priority]||'#999'};color:#fff;text-align:center;line-height:20px;font-size:11px;font-weight:700">${p.priority}</span> <select style="width:55px" onchange="plafonds[${i}].priority=parseInt(this.value);renderPlafonds()">${[1,2,3,4,5].map(n=>`<option ${n===p.priority?'selected':''}>${n}</option>`).join('')}</select></td><td>${st}</td><td><button class="btn-remove" onclick="plafonds.splice(${i},1);renderPlafonds()">&times;</button></td></tr>`;});
+updateValidation();}
+
+function checkDupPlafond(idx,sel){const ch=plafonds[idx].channel;const par=sel.value;
+const dup=plafonds.findIndex((p,j)=>j!==idx&&p.channel===ch&&p.partner===par);
+if(dup>=0){toast('Rule already exists for '+ch+' × '+par);sel.value=plafonds[idx].partner;return;}
+plafonds[idx].partner=par;}
+
+function addPlafond(){const wc=getWalletChannelCodes();
+// Find first unused (channel,partner) pair
+let ch=wc[0]||'',par=partners[0]?.code||'';
+for(const c of wc){for(const p of partners){if(!plafonds.some(r=>r.channel===c&&r.partner===p.code)){ch=c;par=p.code;break;}}if(ch&&par)break;}
+if(plafonds.some(r=>r.channel===ch&&r.partner===par)){toast('All pairs already have rules');return;}
+plafonds.push({channel:ch,partner:par,plafond:0,priority:3});renderPlafonds();}
+
+function autoFillPlafonds(){
+plafonds=[];
+const usage={};SIM_TXS.forEach(tx=>{const pool=getPool(tx.Local_Par_n);if(pool.type!=='wallet')return;const ch=tx.Local_Par_n;if(!usage[ch])usage[ch]={};usage[ch][tx.Par_l]=(usage[ch][tx.Par_l]||0)+V(tx.Amount_mru_h);});
+Object.entries(usage).forEach(([ch,pu])=>{const chKey=ch.replace('sim_','');const cBal=SIM_INITIAL.wallet[chKey]||0;const total=Object.values(pu).reduce((a,v)=>a+v,0);
+Object.entries(pu).sort((a,b)=>b[1]-a[1]).forEach(([par,vol],idx)=>{const pct=total>0?vol/total:0;
+plafonds.push({channel:ch,partner:par,plafond:Math.round(cBal*pct),priority:idx===0?1:idx===1?3:4});});});
+renderPlafonds();toast('Plafonds auto-filled from historical usage');}
+function renderAll(){renderPartners();renderChannels();renderLiquidityOverview();renderPlafonds();renderSettlements();}
+function buildConfigJSON(){return{layer1:partners.map(p=>({...p,channels:channels.filter(c=>c.partner===p.code).map(c=>({code:c.code,cost_payout:c.cost_payout,cost_type:c.cost_type}))})),layer2:settlements,plafonds:plafonds};}
+function loadFromDict(d){partners=[];channels=[];settlements=[];(d.layer1||[]).forEach(p=>{partners.push({code:p.code,name:p.name||'',is_international:!!p.is_international,currency:p.currency||'MRU',commission_type:p.commission_type||'percentage',commission_rate:p.commission_rate||'0',commission_fixed:p.commission_fixed||'0',fx_partner_rate:p.fx_partner_rate||'0',fx_cadorim_rate:p.fx_cadorim_rate||'0',fx_market_rate:p.fx_market_rate||'0'});(p.channels||[]).forEach(c=>channels.push({partner:p.code,code:c.code,cost_payout:c.cost_payout||'0',cost_type:c.cost_type||'fixed'}))});(d.layer2||[]).forEach(s=>settlements.push({...s}));plafonds=[];(d.plafonds||[]).forEach(p=>plafonds.push({...p}));renderAll();}
+function loadConfig(){document.getElementById('file-input').click();}
+function handleFileLoad(e){const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=ev=>{try{loadFromDict(JSON.parse(ev.target.result));toast('Config loaded')}catch(err){alert('Invalid: '+err)}};r.readAsText(f);}
+function loadSimulation(){loadFromDict(SIM_CONFIG);toast('Loaded — 5 partners, 50 txns');}
+
+// ══════════════════════════════════════════════════════════════
+// PROFIT ENGINE
+// ══════════════════════════════════════════════════════════════
+const V=s=>typeof s==='string'?parseFloat(s):(s||0);
+function computeL1(tx,cfg){const p=cfg.layer1.find(x=>x.code===tx.Par_l);if(!p)return{commission_a:0,cost_payout_a:0,fx_gain_a:0,gain_transaction_a:0,profit_transaction_a:0};const amt=V(tx.Amount_j),mru=V(tx.Amount_mru_h);let comm=p.commission_type==='percentage'?Math.round(amt*V(p.commission_rate)*100)/100:V(p.commission_fixed);const ch=(p.channels||[]).find(c=>c.code===tx.Local_Par_n);let cost=ch?(ch.cost_type==='percentage'?Math.round(mru*V(ch.cost_payout)*100)/100:V(ch.cost_payout)):0;const fxp=V(p.fx_partner_rate),fxc=V(p.fx_cadorim_rate);let fx=(fxc>0&&fxp>0)?Math.round((fxc-fxp)*amt*100)/100:0;return{commission_a:comm,cost_payout_a:cost,fx_gain_a:fx,gain_transaction_a:Math.round((comm-cost)*100)/100,profit_transaction_a:Math.round((comm-cost+fx)*100)/100};}
+function computeL2(s){return{gain_sett_s:Math.round((V(s.fx_settlement_rate)-V(s.fx_reference_rate))*V(s.Amount_s)*100)/100};}
+
+// ══════════════════════════════════════════════════════════════
+// BALANCE ENGINE
+// ══════════════════════════════════════════════════════════════
+function getPool(ch){if(!ch)return{type:'internal',key:null};const c=ch.replace('sim_','');if(c.startsWith('caisse_'))return{type:'cash',key:c};if(['sedad','click','masrvi','bankily'].includes(c))return{type:'wallet',key:c};if(c.includes('agent'))return{type:'agent',key:'agent_pool'};return{type:'internal',key:null};}
+function initBal(ini){const recv={};if(ini.opening_receivable){for(const[k,v]of Object.entries(ini.opening_receivable))recv[k]={foreign:v.foreign,mru:v.mru,currency:v.currency};}
+return{cash:{...ini.cash},wallet:{...ini.wallet},bank:{...ini.bank},receivable:recv,client_float:ini.client_float||0,agent_balance:0,working_capital:ini.working_capital,profit_l1:0,profit_l2:0,events:[],alerts:[]};}
+function applyTx(tx,pr,b){const pool=getPool(tx.Local_Par_n);const mru=V(tx.Amount_mru_h);const ev={...tx,...pr,pool_type:pool.type,pool_key:pool.key,event:'transaction'};
+if(tx.type==='international'){if(pool.type==='wallet')b.wallet[pool.key]=(b.wallet[pool.key]||0)-mru;else if(pool.type==='cash')b.cash[pool.key]=(b.cash[pool.key]||0)-mru;else if(pool.type==='agent')b.agent_balance-=mru;if(!b.receivable[tx.Par_l])b.receivable[tx.Par_l]={foreign:0,mru:0,currency:tx.Cur_k};b.receivable[tx.Par_l].foreign+=V(tx.Amount_j);b.receivable[tx.Par_l].mru+=mru;b.profit_l1+=pr.profit_transaction_a;
+}else if(tx.type==='wallet_p2p'){
+}else if(tx.type==='wallet_cashout'){if(pool.type==='wallet')b.wallet[pool.key]=(b.wallet[pool.key]||0)-mru;else if(pool.type==='cash')b.cash[pool.key]=(b.cash[pool.key]||0)-mru;b.client_float-=mru;b.profit_l1+=pr.profit_transaction_a;
+}else if(tx.type==='b2c_deposit'){const cs=tx.caisse||'caisse_babe';b.cash[cs]=(b.cash[cs]||0)+mru;b.client_float+=mru;ev.pool_type='cash';ev.pool_key=cs;
+}else if(tx.type==='b2c_payout'){if(pool.type==='wallet')b.wallet[pool.key]=(b.wallet[pool.key]||0)-mru;else if(pool.type==='agent')b.agent_balance-=mru;else if(pool.type==='cash')b.cash[pool.key]=(b.cash[pool.key]||0)-mru;b.client_float-=mru;b.profit_l1+=pr.profit_transaction_a;
+}else if(tx.type==='agent_cashout'){b.agent_balance-=mru;b.profit_l1+=pr.profit_transaction_a;
+}else if(tx.type==='agent_refund'){const cs=tx.caisse||'caisse_mboirick';b.cash[cs]=(b.cash[cs]||0)-mru;b.agent_balance+=mru;ev.pool_type='cash';ev.pool_key=cs;}
+b.events.push(ev);
+if(pool.type==='wallet'&&pool.key&&(b.wallet[pool.key]||0)<0)b.alerts.push({severity:'red',date:tx.date,id:tx.id,msg:`Float at ${pool.key}: ${Math.round(b.wallet[pool.key])} MRU — top up needed`});
+if(pool.type==='cash'&&pool.key&&(b.cash[pool.key]||0)<0)b.alerts.push({severity:'yellow',date:tx.date,id:tx.id,msg:`Caisse ${pool.key} negative: ${Math.round(b.cash[pool.key])} MRU`});
+if(b.agent_balance>0)b.alerts.push({severity:'red',date:tx.date,id:tx.id,msg:`Agent balance positive: ${Math.round(b.agent_balance)} MRU — error`});
+if(b.client_float<-1)b.alerts.push({severity:'yellow',date:tx.date,id:tx.id,msg:`Client float negative: ${Math.round(b.client_float)} MRU`});}
+function applySett(s,b){const g=computeL2(s);const mr=Math.round(V(s.Amount_s)*V(s.fx_settlement_rate)*100)/100;const mc=Math.round(V(s.Amount_s)*V(s.fx_reference_rate)*100)/100;if(b.receivable[s.Par_l]){b.receivable[s.Par_l].foreign-=V(s.Amount_s);b.receivable[s.Par_l].mru-=mc;}b.bank[s.Bank_t]=(b.bank[s.Bank_t]||0)+mr;b.profit_l2+=g.gain_sett_s;b.events.push({...s,...g,event:'settlement',mru_received:mr,mru_cleared:mc});}
+function applyWd(w,b){b.bank[w.bank]=(b.bank[w.bank]||0)-V(w.amount);b.cash[w.caisse]=(b.cash[w.caisse]||0)+V(w.amount);b.events.push({...w,event:'withdrawal'});}
+function checkEq(b){const ct=Object.values(b.cash).reduce((a,v)=>a+v,0);const wt=Object.values(b.wallet).reduce((a,v)=>a+v,0);const bt=Object.values(b.bank).reduce((a,v)=>a+v,0);const rt=Object.values(b.receivable).reduce((a,r)=>a+r.mru,0);const as=Math.round((ct+wt+bt+rt)*100)/100;const li=Math.round((b.client_float+b.agent_balance)*100)/100;const np=Math.round((as-li)*100)/100;return{assets:as,liabilities:li,netPosition:np,cashTotal:ct,walletTotal:wt,bankTotal:bt,recvTotal:rt,working_capital:b.working_capital};}
+
+// ══════════════════════════════════════════════════════════════
+// PLAFOND GATING
+// ══════════════════════════════════════════════════════════════
+function checkPlafond(tx,cfg,plafondUsage,walletBal){
+const ch=tx.Local_Par_n,par=tx.Par_l,amt=V(tx.Amount_mru_h),key=par+'|'+ch;
+const pool=getPool(ch);
+if(pool.type!=='wallet')return{allowed:true,reason:'exempt'};
+const rule=(cfg.plafonds||[]).find(p=>p.channel===ch&&p.partner===par);
+if(!rule)return{allowed:false,reason:'no_allocation'};
+const cap=V(rule.plafond);
+if(cap===0)return{allowed:false,reason:'blocked'};
+// CHECK 1: Plafond allocation
+const used=plafondUsage[key]||0;
+if(used+amt>cap)return{allowed:false,reason:'plafond_exceeded',used,cap,requested:amt,remaining:cap-used,walletBalance:walletBal[pool.key]||0};
+// CHECK 2: Actual wallet balance
+const curBal=walletBal[pool.key]||0;
+if(curBal<amt)return{allowed:false,reason:'insufficient_balance',walletBalance:curBal,requested:amt,shortfall:amt-curBal,plafondOk:true,used,cap,remaining:cap-used};
+return{allowed:true,reason:'ok',used,remaining:cap-used-amt,walletBalance:curBal-amt};}
+
+// ══════════════════════════════════════════════════════════════
+// QUEUE ENGINE — tryExecute + autoResolve + runEngine
+// ══════════════════════════════════════════════════════════════
+function daysBetween(d1,d2){return Math.max(0,Math.round((new Date(d2)-new Date(d1))/86400000));}
+
+function tryExecute(tx,cfg,plafondUsage,bal){
+const ch=tx.Local_Par_n,par=tx.Par_l,amt=V(tx.Amount_mru_h);
+const pool=getPool(ch);
+if(pool.type!=='wallet'){const pr=computeL1(tx,cfg);applyTx(tx,pr,bal);return{executed:true,record:{...tx,...pr,timeInQueue:0,posted_at:tx.date,created_at:tx.date}};}
+const key=par+'|'+ch;const rule=(cfg.plafonds||[]).find(p=>p.channel===ch&&p.partner===par);
+if(!rule)return{executed:false,reason:'no_allocation',detail:'No plafond rule'};
+const cap=V(rule.plafond);
+if(cap===0)return{executed:false,reason:'blocked',detail:'Plafond = 0'};
+const used=plafondUsage[key]||0;
+if(used+amt>cap)return{executed:false,reason:'plafond_exceeded',detail:`Used ${fmt(used)} of ${fmt(cap)}, need ${fmt(amt)}`};
+const wBal=bal.wallet[pool.key]||0;
+if(wBal<amt)return{executed:false,reason:'insufficient_balance',detail:`Wallet ${pool.key}: ${fmt(wBal)}, need ${fmt(amt)}, shortfall ${fmt(amt-wBal)}`};
+const pr=computeL1(tx,cfg);applyTx(tx,pr,bal);plafondUsage[key]=used+amt;
+return{executed:true,record:{...tx,...pr,timeInQueue:0,posted_at:tx.date,created_at:tx.date}};}
+
+function autoResolve(curDate,trigger,cfg,plafondUsage,bal,pq,exTxs,autoActs){
+const pending=pq.filter(p=>p.status==='pending').sort((a,b)=>a.priority-b.priority||a.arrived.localeCompare(b.arrived));
+if(!pending.length)return;
+// Strategy 1: try direct execution
+for(const ptx of pending){const r=tryExecute(ptx,cfg,plafondUsage,bal);
+if(r.executed){ptx.status='released';ptx.releasedAt=curDate;ptx.releasedBy=trigger;ptx.timeInQueue=daysBetween(ptx.queuedAt,curDate);
+exTxs.push({...r.record,timeInQueue:ptx.timeInQueue,wasQueued:true,posted_at:curDate,created_at:ptx.queuedAt||ptx.arrived,arrived:ptx.arrived});
+bal.alerts.push({severity:'green',date:curDate,id:ptx.id,msg:`RELEASED ${ptx.id} after ${ptx.timeInQueue}d (${trigger})`});}}
+// Strategy 2: auto top-up from caisse (if enabled)
+const autoEnabled=document.getElementById('auto-topup')?.checked!==false;
+if(!autoEnabled)return;
+const caisseMin=V(document.getElementById('caisse-min')?.value)||50000;
+const still=pq.filter(p=>p.status==='pending').sort((a,b)=>a.priority-b.priority||a.arrived.localeCompare(b.arrived));
+for(const ptx of still){const pool=getPool(ptx.Local_Par_n);if(pool.type!=='wallet')continue;
+const amt=V(ptx.Amount_mru_h);const wBal=bal.wallet[pool.key]||0;const shortfall=amt-wBal;
+if(shortfall<=0)continue;
+const bestCaisse=Object.entries(bal.cash).filter(([k,v])=>v-shortfall>=caisseMin).sort((a,b)=>b[1]-a[1])[0];
+if(!bestCaisse)continue;
+const topUp=Math.min(shortfall+10000,bestCaisse[1]-caisseMin);
+bal.cash[bestCaisse[0]]-=topUp;bal.wallet[pool.key]=(bal.wallet[pool.key]||0)+topUp;
+autoActs.push({date:curDate,type:'wallet_topup',from:bestCaisse[0],to:pool.key,amount:topUp,trigger:`Release ${ptx.id} (P${ptx.priority})`});
+bal.alerts.push({severity:'blue',date:curDate,id:'AUTO',msg:`AUTO: ${fmt(topUp)} ${bestCaisse[0]} → ${pool.key} for ${ptx.id}`});
+const r2=tryExecute(ptx,cfg,plafondUsage,bal);
+if(r2.executed){ptx.status='released';ptx.releasedAt=curDate;ptx.releasedBy='auto_topup';ptx.timeInQueue=daysBetween(ptx.queuedAt,curDate);
+exTxs.push({...r2.record,timeInQueue:ptx.timeInQueue,wasQueued:true});
+bal.alerts.push({severity:'green',date:curDate,id:ptx.id,msg:`RELEASED ${ptx.id} after ${ptx.timeInQueue}d (auto top-up from ${bestCaisse[0]})`});}}}
+
+function runEngine(){
+const cfg=buildConfigJSON();
+const wKeys=Object.keys(SIM_INITIAL.wallet||{});
+for(const wk of wKeys){const ch='sim_'+wk;const cBal=SIM_INITIAL.wallet[wk];
+const total=(cfg.plafonds||[]).filter(p=>p.channel===ch&&V(p.plafond)>0).reduce((a,p)=>a+V(p.plafond),0);
+if(total>cBal){toast(`Fix over-allocation on ${ch}: ${fmt(total)} > ${fmt(cBal)}`);return;}}
+const bal=initBal(SIM_INITIAL);
+const plafondUsage={},pendingQueue=[],executedTxs=[],autoActions=[],timeline=[];
+const all=[];SIM_TXS.forEach(t=>all.push({...t,_t:'tx',_d:t.date}));SIM_SETT.forEach(s=>all.push({...s,_t:'se',_d:s.date_s}));SIM_WD.forEach(w=>all.push({...w,_t:'wd',_d:w.date}));
+all.sort((a,b)=>a._d.localeCompare(b._d)||(a.id||'').localeCompare(b.id||''));
+
+all.forEach(ev=>{
+if(ev._t==='tx'){
+  const r=tryExecute(ev,cfg,plafondUsage,bal);
+  if(r.executed){executedTxs.push(r.record);}
+  else{const rule=(cfg.plafonds||[]).find(p=>p.channel===ev.Local_Par_n&&p.partner===ev.Par_l);
+    const pr=computeL1(ev,cfg);
+    pendingQueue.push({...ev,arrived:ev.date,queuedAt:ev.date,reason:r.reason,reasonDetail:r.detail,
+      priority:rule?V(rule.priority):5,status:'pending',releasedAt:null,releasedBy:null,timeInQueue:null,
+      wouldBeProfit:pr.profit_transaction_a,...pr});
+    bal.alerts.push({severity:'yellow',date:ev.date,id:ev.id,msg:`QUEUED ${ev.id}: ${ev.Par_l}→${(ev.Local_Par_n||'').replace('sim_','')} ${fmt(ev.Amount_mru_h)} MRU (${r.reason})`});}
+}else if(ev._t==='se'){
+  applySett(ev,bal);
+  autoResolve(ev.date_s||ev._d,'settlement',cfg,plafondUsage,bal,pendingQueue,executedTxs,autoActions);
+}else{
+  applyWd(ev,bal);
+  autoResolve(ev.date||ev._d,'withdrawal',cfg,plafondUsage,bal,pendingQueue,executedTxs,autoActions);
+}
+const eq=checkEq(bal);
+timeline.push({date:ev._d,id:ev.id,...eq,profit_l1:bal.profit_l1,profit_l2:bal.profit_l2,client_float:bal.client_float,agent_balance:bal.agent_balance,
+  pendingCount:pendingQueue.filter(p=>p.status==='pending').length,pendingVolume:pendingQueue.filter(p=>p.status==='pending').reduce((a,p)=>a+V(p.Amount_mru_h),0)});
+});
+// Sanity checks
+for(const[k,v]of Object.entries(bal.wallet)){if(v<-0.01){bal.alerts.push({severity:'red',date:'END',id:'SANITY',msg:`ERROR: ${k} ended at ${fmt(v)}`});}}
+for(const[k,v]of Object.entries(bal.receivable)){if(v.foreign<-0.01)bal.alerts.push({severity:'yellow',date:'END',id:'RECV',msg:`${k.replace('sim_','')} receivable negative: ${f2(v.foreign)} ${v.currency} — partner overpaid (LIABILITY)`});}
+const unresolved=pendingQueue.filter(p=>p.status==='pending');
+if(unresolved.length)bal.alerts.push({severity:'red',date:'END',id:'UNRESOLVED',msg:`${unresolved.length} transactions still pending (${fmt(unresolved.reduce((a,p)=>a+V(p.Amount_mru_h),0))} MRU)`});
+// Build partner + bank ledgers from processed data
+const partnerLedgers={},bankLedgers={};
+cfg.layer1.forEach(p=>{const oR=SIM_INITIAL.opening_receivable?.[p.code];partnerLedgers[p.code]={entries:[],runRecvF:oR?oR.foreign:0,runRecvM:oR?oR.mru:0,runFloat:0,runAgent:0,totalL1:0,totalL2:0,config:p};});
+Object.keys(SIM_INITIAL.bank).forEach(bk=>{bankLedgers[bk]={entries:[],opening:SIM_INITIAL.bank[bk],runBal:SIM_INITIAL.bank[bk],totalIn:0,totalOut:0};});
+// FIX 2: pendingQueue is the single source of truth for pending — store on bal
+bal.pendingQueue=pendingQueue.filter(p=>p.status==='pending').map(p=>({id:p.id,partner:p.Par_l,created_at:p.arrived||p.date,Amount_j:V(p.Amount_j),currency:p.Cur_k||'MRU',Amount_mru_h:V(p.Amount_mru_h),reason:p.reasonDetail||p.reason,status:'pending'}));
+// FIX 4: Aged-pending alerts
+const TODAY='2026-03-31';bal.pendingQueue.forEach(p=>{const age=Math.floor((new Date(TODAY)-new Date(p.created_at))/86400000);
+if(age>=5)bal.alerts.push({severity:age>=10?'red':'yellow',date:p.created_at,id:p.id,msg:`Pending ${age}d: ${p.id} (${(p.partner||'').replace('sim_','')}) — ${p.reason}`});});
+// Build ledger events — NO pending rows in partner ledgers (FIX 2)
+const allLedgerEvents=[];
+executedTxs.forEach(t=>allLedgerEvents.push({...t,_le:'tx',_ld:t.posted_at||t.date}));
+SIM_SETT.forEach(s=>allLedgerEvents.push({...s,...computeL2(s),_le:'se',_ld:s.date_s}));
+SIM_WD.forEach(w=>allLedgerEvents.push({...w,_le:'wd',_ld:w.date}));
+autoActions.forEach(a=>allLedgerEvents.push({...a,_le:'aa',_ld:a.date}));
+allLedgerEvents.sort((a,b)=>a._ld.localeCompare(b._ld)||(a.id||'').localeCompare(b.id||''));
+allLedgerEvents.forEach(ev=>{
+if(ev._le==='tx'){
+  const pl=partnerLedgers[ev.Par_l];if(!pl)return;const isI=pl.config.is_international;
+  if(isI){pl.runRecvF+=V(ev.Amount_j);pl.runRecvM+=V(ev.Amount_mru_h);}
+  if(ev.type==='b2c_deposit')pl.runFloat+=V(ev.Amount_mru_h);
+  else if(ev.type==='b2c_payout')pl.runFloat-=V(ev.Amount_mru_h);
+  if(ev.type==='agent_cashout')pl.runAgent-=V(ev.Amount_mru_h);
+  else if(ev.type==='agent_refund')pl.runAgent+=V(ev.Amount_mru_h);
+  pl.totalL1+=ev.profit_transaction_a||0;
+  const created=ev.arrived||ev.date;const posted=ev.posted_at||ev.date;
+  pl.entries.push({seq:pl.entries.filter(e=>e.event==='transaction').length+1,id:ev.id,created_at:created,posted_at:posted,type:ev.type,channel:(ev.Local_Par_n||'').replace('sim_',''),foreignAmount:isI?V(ev.Amount_j):null,currency:isI?pl.config.currency:'MRU',fxRate:isI?V(pl.config.fx_cadorim_rate):null,mruAmount:V(ev.Amount_mru_h),commission:ev.commission_a||0,cost:ev.cost_payout_a||0,fxGain:ev.fx_gain_a||0,profit:ev.profit_transaction_a||0,event:'transaction',status:ev.wasQueued?'released':'immediate',timeInQueue:ev.timeInQueue||0,recvF:pl.runRecvF,recvM:pl.runRecvM,float:pl.runFloat,agentBal:pl.runAgent});
+}else if(ev._le==='se'){
+  const pl=partnerLedgers[ev.Par_l];if(pl){
+    const mr=Math.round(V(ev.Amount_s)*V(ev.fx_settlement_rate)*100)/100;const mref=Math.round(V(ev.Amount_s)*V(ev.fx_reference_rate)*100)/100;
+    pl.runRecvF-=V(ev.Amount_s);pl.runRecvM-=mref;pl.totalL2+=ev.gain_sett_s||0;
+    pl.entries.push({seq:null,id:ev.id,created_at:ev.date_s,posted_at:ev.date_s,event:'settlement',foreignAmount:-V(ev.Amount_s),currency:ev.Cur_k,fxRate:V(ev.fx_settlement_rate),fxRef:V(ev.fx_reference_rate),mruAmount:mr,mruAtRef:mref,l2Gain:ev.gain_sett_s||0,bank:ev.Bank_t,recvF:pl.runRecvF,recvM:pl.runRecvM});}
+  const bl=bankLedgers[ev.Bank_t];if(bl){
+    const mr=Math.round(V(ev.Amount_s)*V(ev.fx_settlement_rate)*100)/100;bl.runBal+=mr;bl.totalIn+=mr;
+    bl.entries.push({id:ev.id,created_at:ev.date_s,posted_at:ev.date_s,type:'settlement',partner:ev.Par_l,foreignAmount:V(ev.Amount_s),currency:ev.Cur_k,fxRate:V(ev.fx_settlement_rate),fxRef:V(ev.fx_reference_rate),mruIn:mr,mruOut:0,l2Gain:ev.gain_sett_s||0,balance:bl.runBal});}
+}else if(ev._le==='wd'){
+  const bl=bankLedgers[ev.bank];if(bl){bl.runBal-=V(ev.amount);bl.totalOut+=V(ev.amount);
+    bl.entries.push({id:ev.id,created_at:ev.date,posted_at:ev.date,type:'withdrawal',destination:ev.caisse,mruIn:0,mruOut:V(ev.amount),balance:bl.runBal});}
+}});
+
+engineResults={balances:JSON.parse(JSON.stringify(bal)),equation:checkEq(bal),timeline,txResults:executedTxs,pendingQueue,autoActions,plafondUsage:{...plafondUsage},plafondRules:cfg.plafonds||[],settlements:SIM_SETT.map(s=>({...s,...computeL2(s)})),withdrawals:SIM_WD,initial:SIM_INITIAL,config:cfg,partnerLedgers,bankLedgers};
+renderSetupResults(engineResults);
+buildCEO(engineResults);
+buildBudget(engineResults);
+buildTreasury(engineResults);
+buildOps(engineResults);
+buildPositions(engineResults);
+sw(1);toast('Engine computed');}
+
+function saveResults(){if(!engineResults){alert('Run engine first');return;}const blob=new Blob([JSON.stringify(engineResults)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='engine_results.json';a.click();}
+
+// ══════════════════════════════════════════════════════════════
+// HELPERS
+// ══════════════════════════════════════════════════════════════
+const fmt=n=>Math.round(n||0).toLocaleString('fr-FR');
+const f2=n=>(n||0).toLocaleString('fr-FR',{minimumFractionDigits:2,maximumFractionDigits:2});
+const cls=n=>(n||0)>=0?'pos':'neg';
+const PC=['#2563EB','#059669','#D97706','#7C3AED','#DC2626','#64748b','#14b8a6'];
+function renderWalletBar(){if(!engineResults)return'';const bal=engineResults.balances;let h='<div style="display:flex;gap:18px;align-items:center;padding:8px 16px;background:var(--surface-alt);border:1px solid var(--border);border-radius:var(--r);margin-bottom:14px;font-size:11px"><strong style="color:var(--muted)">Wallets:</strong>';
+for(const[k,v]of Object.entries(bal.wallet)){const ini=engineResults.initial.wallet[k]||1;const pct=Math.max(0,Math.min(100,v/ini*100));const col=v<0?'var(--red)':pct<10?'var(--red)':pct<50?'var(--yellow)':'var(--green)';
+h+=`<div style="display:flex;align-items:center;gap:5px"><span>${k}</span><span style="font-weight:600;color:${col}">${fmt(v)}</span><div style="width:40px;height:6px;background:#eee;border-radius:3px;overflow:hidden"><div style="width:${Math.max(0,pct)}%;height:100%;background:${col}"></div></div></div>`;}
+return h+'</div>';}
+
+// ══════════════════════════════════════════════════════════════
+// SETUP RESULTS (mini summary under Setup tab)
+// ══════════════════════════════════════════════════════════════
+function renderSetupResults(R){const el=document.getElementById('setup-results');const eq=R.equation;const bal=R.balances;
+const pq=R.pendingQueue||[];const released=pq.filter(p=>p.status==='released').length;const pending=pq.filter(p=>p.status==='pending').length;const na=R.autoActions?.length||0;
+el.innerHTML=`<div class="eq"><strong>Net Position:</strong> ${fmt(eq.netPosition)} MRU &nbsp; <strong>Profit:</strong> <span class="${cls(bal.profit_l1+bal.profit_l2)}" style="font-weight:700">${f2(bal.profit_l1+bal.profit_l2)}</span> &nbsp; <strong>Executed:</strong> ${R.txResults.length} &nbsp; <strong style="color:var(--green)">Released:</strong> ${released} &nbsp; ${pending?`<strong style="color:var(--red)">Pending: ${pending}</strong>`:'<strong style="color:var(--green)">0 pending</strong>'} &nbsp; <strong style="color:var(--blue)">Auto-actions:</strong> ${na}</div>`;}
+
+// ══════════════════════════════════════════════════════════════
+// CEO TAB
+// ══════════════════════════════════════════════════════════════
+function buildCEO(R){const bal=R.balances;const txs=R.txResults;const setts=R.settlements;const eq=R.equation;
+const pq=R.pendingQueue||[];const released=pq.filter(p=>p.status==='released');const pending=pq.filter(p=>p.status==='pending');const autoActs=R.autoActions||[];
+const totalProfit=bal.profit_l1+bal.profit_l2;const tComm=txs.reduce((a,t)=>a+(t.commission_a||0),0);const tCost=txs.reduce((a,t)=>a+(t.cost_payout_a||0),0);const tFx=txs.reduce((a,t)=>a+(t.fx_gain_a||0),0);const tL2=setts.reduce((a,s)=>a+(s.gain_sett_s||0),0);const vol=txs.reduce((a,t)=>a+V(t.Amount_mru_h),0);
+const avgWait=released.length?Math.round(released.reduce((a,p)=>a+(p.timeInQueue||0),0)/released.length*10)/10:0;
+const maxWait=pq.reduce((a,p)=>Math.max(a,p.timeInQueue||0),0);
+const byP={};txs.forEach(t=>{if(!byP[t.Par_l])byP[t.Par_l]={n:0,vol:0,profit:0,comm:0,fx:0,cost:0};const p=byP[t.Par_l];p.n++;p.vol+=V(t.Amount_mru_h);p.profit+=t.profit_transaction_a||0;p.comm+=t.commission_a||0;p.fx+=t.fx_gain_a||0;p.cost+=t.cost_payout_a||0;});
+const monthly={};txs.forEach(t=>{const d=t.posted_at||t.date;if(!d)return;const m=d.slice(0,7);if(!monthly[m])monthly[m]={profit:0,vol:0};monthly[m].profit+=t.profit_transaction_a||0;monthly[m].vol+=V(t.Amount_mru_h);});const mK=Object.keys(monthly).sort();
+const totalRev=tComm+tFx+tL2;
+// By flow type
+const byFlow={};txs.forEach(t=>{const fl=t.type||'other';if(!byFlow[fl])byFlow[fl]={n:0,vol:0};byFlow[fl].n++;byFlow[fl].vol+=V(t.Amount_mru_h);});
+
+let h=renderWalletBar();
+// Cards — all clickable
+h+=`<div class="cards">
+<div class="card" onclick="toggle('ceo_profit')"><div class="lb">Total Profit</div><div class="vl vg">${fmt(totalProfit)}</div><div class="sb">L1: ${fmt(bal.profit_l1)} + L2: ${fmt(bal.profit_l2)}</div></div>
+<div class="card" onclick="toggle('ceo_volume')"><div class="lb">Volume (MRU)</div><div class="vl">${fmt(vol)}</div><div class="sb">${txs.length} transactions</div></div>
+<div class="card" onclick="toggle('ceo_revenue')"><div class="lb">Revenue</div><div class="vl vb">${fmt(totalRev)}</div><div class="sb">Comm+FX</div></div>
+<div class="card" onclick="toggle('ceo_netpos')"><div class="lb">Net Position</div><div class="vl vg">${fmt(eq.netPosition)}</div></div>
+${pq.length?`<div class="card" style="border-color:var(--green)" onclick="toggle('ceo_queue')"><div class="lb" style="color:var(--green)">Released</div><div class="vl vg">${released.length}</div><div class="sb">${avgWait}d avg wait</div></div>
+<div class="card" style="border-color:${pending.length?'var(--red)':'var(--green)'}" onclick="toggle('ceo_queue')"><div class="lb" style="color:${pending.length?'var(--red)':'var(--green)'}">Pending</div><div class="vl ${pending.length?'vr':'vg'}">${pending.length}</div><div class="sb">${fmt(pending.reduce((a,p)=>a+V(p.Amount_mru_h),0))} MRU</div></div>
+<div class="card" onclick="toggle('ceo_queue')"><div class="lb">Avg Wait</div><div class="vl" style="color:${avgWait>7?'var(--red)':avgWait>3?'var(--accent)':'var(--green)'}">${avgWait}d</div><div class="sb">max: ${maxWait}d</div></div>`:''}
+</div>`;
+
+// DRILL: Profit
+const pn=Object.keys(byP).sort((a,b)=>byP[b].profit-byP[a].profit);
+h+=`<div id="ceo_profit" class="sec drill"><h3>P&L Breakdown</h3><table><thead><tr><th>Source</th><th class="n">Amount</th></tr></thead><tbody>
+<tr><td>Commission</td><td class="n">${f2(tComm)}</td></tr><tr><td>Payout costs</td><td class="n neg">${f2(tCost)}</td></tr><tr><td>FX gain (L1)</td><td class="n pos">${f2(tFx)}</td></tr>
+<tr style="border-top:2px solid var(--border);font-weight:600"><td>L1 Profit</td><td class="n">${f2(bal.profit_l1)}</td></tr>
+<tr><td>Settlement FX (L2)</td><td class="n pos">${f2(tL2)}</td></tr>
+<tr style="border-top:2px solid var(--border);font-weight:700"><td>TOTAL PROFIT</td><td class="n ${cls(totalProfit)}">${f2(totalProfit)}</td></tr>
+</tbody></table><h3 style="margin-top:12px">By Partner</h3><table><thead><tr><th>Partner</th><th class="n">Profit</th><th class="n">Margin</th><th class="n">Comm</th><th class="n">Cost</th><th class="n">FX</th></tr></thead><tbody>
+${pn.map(p=>{const d=byP[p];const margin=d.vol>0?(d.profit/d.vol*100).toFixed(2)+'%':'0%';return`<tr><td>${p.replace('sim_','')}</td><td class="n ${cls(d.profit)}">${f2(d.profit)}</td><td class="n">${margin}</td><td class="n">${f2(d.comm)}</td><td class="n neg">${f2(d.cost)}</td><td class="n pos">${f2(d.fx)}</td></tr>`}).join('')}
+</tbody></table></div>`;
+
+// DRILL: Volume
+h+=`<div id="ceo_volume" class="sec drill"><h3>Volume by Partner</h3><table><thead><tr><th>Partner</th><th class="n">Txns</th><th class="n">Volume</th><th class="n">% Total</th></tr></thead><tbody>
+${pn.map(p=>{const d=byP[p];return`<tr><td>${p.replace('sim_','')}</td><td class="n">${d.n}</td><td class="n">${fmt(d.vol)}</td><td class="n">${vol>0?Math.round(d.vol/vol*100)+'%':'-'}</td></tr>`}).join('')}
+</tbody></table><h3 style="margin-top:12px">By Flow Type</h3><table><thead><tr><th>Type</th><th class="n">Txns</th><th class="n">Volume</th><th class="n">%</th></tr></thead><tbody>
+${Object.entries(byFlow).sort((a,b)=>b[1].vol-a[1].vol).map(([fl,d])=>`<tr><td>${fl}</td><td class="n">${d.n}</td><td class="n">${fmt(d.vol)}</td><td class="n">${vol>0?Math.round(d.vol/vol*100)+'%':'-'}</td></tr>`).join('')}
+</tbody></table></div>`;
+
+// DRILL: Revenue
+h+=`<div id="ceo_revenue" class="sec drill"><h3>Revenue Sources</h3><table><thead><tr><th>Source</th><th class="n">Amount</th><th class="n">% of Revenue</th></tr></thead><tbody>
+<tr><td>FX L1 (spread)</td><td class="n pos">${f2(tFx)}</td><td class="n">${totalRev>0?Math.round(tFx/totalRev*100)+'%':'-'}</td></tr>
+<tr><td>FX L2 (settlement)</td><td class="n pos">${f2(tL2)}</td><td class="n">${totalRev>0?Math.round(tL2/totalRev*100)+'%':'-'}</td></tr>
+<tr><td>Commission</td><td class="n">${f2(tComm)}</td><td class="n">${totalRev>0?Math.round(tComm/totalRev*100)+'%':'-'}</td></tr>
+<tr style="font-weight:700;border-top:2px solid var(--border)"><td>TOTAL</td><td class="n">${f2(totalRev)}</td><td class="n">100%</td></tr>
+</tbody></table></div>`;
+
+// DRILL: Net Position — WHERE ARE THE FUNDS
+const pUsage=R.plafondUsage||{};
+h+=`<div id="ceo_netpos" class="sec drill"><h3>Fund Distribution — Net Position: ${fmt(eq.netPosition)} MRU</h3>`;
+// Stacked bar
+const assetParts=[{l:'Cash',v:eq.cashTotal,c:'#059669'},{l:'Wallet',v:eq.walletTotal,c:'#2563EB'},{l:'Bank',v:eq.bankTotal,c:'#6366f1'},{l:'Recv',v:eq.recvTotal,c:'#D97706'}];
+const totalAbs=assetParts.reduce((a,p)=>a+Math.abs(p.v),0)||1;
+h+=`<div style="display:flex;height:24px;border-radius:4px;overflow:hidden;border:1px solid var(--border);margin-bottom:12px">`;
+assetParts.forEach(p=>{const w=Math.abs(p.v)/totalAbs*100;if(w>1)h+=`<div style="width:${w}%;background:${p.c};display:flex;align-items:center;justify-content:center;font-size:9px;color:#fff;font-weight:600;overflow:hidden" title="${p.l}: ${fmt(p.v)}">${w>8?p.l+' '+Math.round(w)+'%':''}</div>`;});
+h+=`</div>`;
+// Assets detail
+h+=`<div style="margin-bottom:10px"><strong>ASSETS: ${fmt(eq.assets)} MRU</strong></div>`;
+// Cash
+h+=`<div style="margin-left:10px;margin-bottom:10px"><strong>Cash (caisses): ${fmt(eq.cashTotal)}</strong><table style="font-size:12px;margin-top:4px"><thead><tr><th>Caisse</th><th class="n">Initial</th><th class="n">Current</th><th class="n">Change</th></tr></thead><tbody>`;
+for(const[k,v]of Object.entries(bal.cash)){const ini=R.initial.cash[k]||0;const chg=v-ini;h+=`<tr><td>${k}</td><td class="n">${fmt(ini)}</td><td class="n ${cls(v)}">${fmt(v)}</td><td class="n ${cls(chg)}">${chg>=0?'+':''}${fmt(chg)}</td></tr>`;}
+h+=`</tbody></table></div>`;
+// Wallets
+h+=`<div style="margin-left:10px;margin-bottom:10px"><strong>Wallet Float: ${fmt(eq.walletTotal)}</strong><table style="font-size:12px;margin-top:4px"><thead><tr><th>Wallet</th><th class="n">Initial</th><th class="n">Current</th><th class="n">Plafond</th><th class="n">Available</th></tr></thead><tbody>`;
+for(const[k,v]of Object.entries(bal.wallet)){const ini=R.initial.wallet[k]||0;const chCode='sim_'+k;const rules=(R.config.plafonds||[]).filter(p=>p.channel===chCode);const allocT=rules.reduce((a,r)=>a+V(r.plafond),0);const usedT=rules.reduce((a,r)=>a+(pUsage[r.partner+'|'+r.channel]||0),0);const avail=Math.min(Math.max(0,v),Math.max(0,allocT-usedT));
+h+=`<tr${v<0?' style="background:var(--red-light)"':''}><td>${k}</td><td class="n">${fmt(ini)}</td><td class="n ${cls(v)}">${fmt(v)}</td><td class="n">${fmt(allocT)}</td><td class="n" style="font-weight:600">${fmt(avail)}</td></tr>`;}
+h+=`</tbody></table></div>`;
+// Bank
+h+=`<div style="margin-left:10px;margin-bottom:10px"><strong>Bank: ${fmt(eq.bankTotal)}</strong><table style="font-size:12px;margin-top:4px"><thead><tr><th>Bank</th><th class="n">Initial</th><th class="n">Sett In</th><th class="n">WD Out</th><th class="n">Current</th></tr></thead><tbody>`;
+for(const[k,v]of Object.entries(bal.bank)){const ini=R.initial.bank[k]||0;const sIn=bal.events.filter(e=>e.event==='settlement'&&e.Bank_t===k).reduce((a,e)=>a+(e.mru_received||0),0);const wOut=bal.events.filter(e=>e.event==='withdrawal'&&e.bank===k).reduce((a,e)=>a+V(e.amount),0);
+h+=`<tr><td>${k}</td><td class="n">${fmt(ini)}</td><td class="n pos">+${fmt(sIn)}</td><td class="n neg">-${fmt(wOut)}</td><td class="n">${fmt(v)}</td></tr>`;}
+h+=`</tbody></table></div>`;
+// Receivables
+const recvPos=Object.values(bal.receivable).filter(r=>r.mru>=0).reduce((a,r)=>a+r.mru,0);
+const recvNeg=Object.values(bal.receivable).filter(r=>r.mru<0).reduce((a,r)=>a+r.mru,0);
+h+=`<div style="margin-left:10px;margin-bottom:10px"><strong>Receivables: ${fmt(recvPos)} MRU</strong>${recvNeg<0?` <span class="neg" style="font-size:12px">(${fmt(Math.abs(recvNeg))} MRU overpaid — liability)</span>`:''}<table style="font-size:12px;margin-top:4px"><thead><tr><th>Partner</th><th class="n">Foreign</th><th class="n">MRU</th><th>Cur</th><th class="n">Settled</th><th class="n">Pending</th><th>Bank</th><th>Status</th></tr></thead><tbody>`;
+for(const[k,v]of Object.entries(bal.receivable)){const settled=setts.filter(s=>s.Par_l===k).reduce((a,s)=>a+V(s.Amount_s),0);const pending=v.foreign;
+const banks=[...new Set(setts.filter(s=>s.Par_l===k).map(s=>(s.Bank_t||'').replace('sim_','')))].join(', ');const isNeg=v.foreign<0;
+h+=`<tr${isNeg?' style="background:var(--red-light)"':''}><td>${k.replace('sim_','')}</td><td class="n ${isNeg?'neg':''}">${f2(v.foreign)}</td><td class="n ${isNeg?'neg':''}">${fmt(v.mru)}</td><td>${v.currency}</td><td class="n">${f2(settled)}</td><td class="n">${f2(pending)}</td><td>${banks||'-'}</td><td>${isNeg?'<span class="neg" style="font-weight:600">OVERPAID</span>':pending<1?'<span class="pos">CLEAR</span>':'Pending'}</td></tr>`;}
+h+=`</tbody></table></div>`;
+// Liabilities
+h+=`<div style="margin-top:10px"><strong>LIABILITIES: ${fmt(eq.liabilities)} MRU</strong><div style="margin-left:10px;font-size:13px;margin-top:4px">Client Float: ${fmt(bal.client_float)} | Agent: ${fmt(bal.agent_balance)}</div></div>`;
+h+=`</div>`;
+
+// DRILL: Queue
+if(pq.length){
+const waitCol=d=>d>7?'var(--red)':d>3?'var(--accent)':'var(--green)';
+h+=`<div id="ceo_queue" class="sec drill"><h3>Pending Queue — Transaction Status</h3>
+<table style="font-size:12px"><thead><tr><th>ID</th><th>Date</th><th>Partner</th><th>Channel</th><th class="n">Amount</th><th>Pri</th><th>Status</th><th>Wait</th><th>Action</th></tr></thead><tbody>`;
+const priCol=['','#059669','#2563EB','#CA8A04','#D97706','#DC2626'];
+pq.sort((a,b)=>a.arrived.localeCompare(b.arrived)).forEach(p=>{const isRel=p.status==='released';const wait=isRel?p.timeInQueue+'d':daysBetween(p.queuedAt,'2026-03-31')+'d+';
+const action=isRel?`${p.releasedBy}`:`${p.reasonDetail||p.reason}`;
+h+=`<tr style="background:${isRel?'var(--green-light)':'var(--red-light)'}"><td>${p.id}</td><td>${(p.arrived||'').slice(5,10)}</td><td>${p.Par_l.replace('sim_','')}</td><td>${(p.Local_Par_n||'').replace('sim_','')}</td><td class="n">${fmt(p.Amount_mru_h)}</td><td><span style="display:inline-block;width:18px;height:18px;border-radius:50%;background:${priCol[p.priority]||'#999'};color:#fff;text-align:center;line-height:18px;font-size:10px;font-weight:700">${p.priority}</span></td><td><span style="font-weight:600;color:${isRel?'var(--green)':'var(--red)'}">${isRel?'RELEASED':'PENDING'}</span></td><td style="font-weight:600;color:${waitCol(isRel?p.timeInQueue:30)}">${wait}</td><td style="font-size:11px">${action}</td></tr>`;});
+h+=`</tbody></table>`;
+// Auto-actions table
+if(autoActs.length){h+=`<h3 style="margin-top:14px;color:var(--blue)">Auto-Generated Treasury Movements</h3><table style="font-size:12px"><thead><tr><th>Date</th><th>Action</th><th class="n">Amount</th><th>Trigger</th></tr></thead><tbody>`;
+autoActs.forEach(a=>{h+=`<tr style="background:var(--blue-light)"><td>${(a.date||'').slice(0,10)}</td><td>${a.from} → ${a.to}</td><td class="n">${fmt(a.amount)}</td><td>${a.trigger}</td></tr>`;});
+h+=`</tbody></table>`;}
+h+=`</div>`;}
+
+// Charts + top transactions
+h+=`<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px">
+<div class="sec"><h3>Profit by Partner</h3><div class="cw"><canvas id="ceo-p"></canvas></div></div>
+<div class="sec"><h3>Revenue Breakdown</h3><div class="cw"><canvas id="ceo-r"></canvas></div></div></div>
+<div class="sec"><h3>Monthly Trend</h3><div class="cw"><canvas id="ceo-t"></canvas></div></div>`;
+const top=[...txs].sort((a,b)=>(b.profit_transaction_a||0)-(a.profit_transaction_a||0)).slice(0,8);
+h+=`<div class="sec"><h3>Top Transactions</h3><table><thead><tr><th>ID</th><th>Date</th><th>Partner</th><th>Channel</th><th class="n">MRU</th><th class="n">Profit</th></tr></thead><tbody>${top.map(t=>`<tr><td>${t.id}</td><td>${(t.date||'').slice(0,10)}</td><td>${t.Par_l}</td><td>${(t.Local_Par_n||'').replace('sim_','')}</td><td class="n">${fmt(t.Amount_mru_h)}</td><td class="n ${cls(t.profit_transaction_a)}">${f2(t.profit_transaction_a||0)}</td></tr>`).join('')}</tbody></table></div>`;
+h+=`<div class="pdf-bar"><button class="btn-pdf" onclick="exportPDF(1,'Cadorim_CEO_Dashboard')">Export CEO PDF</button></div>`;
+document.getElementById('p1').innerHTML=h;
+Chart.defaults.color='#6B6B6B';Chart.defaults.borderColor='#E0DCD4';Chart.defaults.font.family='-apple-system,sans-serif';
+new Chart(document.getElementById('ceo-p'),{type:'bar',data:{labels:pn,datasets:[{data:pn.map(p=>byP[p].profit),backgroundColor:PC}]},options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{ticks:{callback:v=>fmt(v)}}}}});
+new Chart(document.getElementById('ceo-r'),{type:'doughnut',data:{labels:['Commission','L1 FX','L2 Sett FX'],datasets:[{data:[tComm,tFx,tL2],backgroundColor:['#2563EB','#059669','#7C3AED']}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{size:11}}}}}});
+new Chart(document.getElementById('ceo-t'),{type:'line',data:{labels:mK,datasets:[{label:'Profit',data:mK.map(m=>monthly[m].profit),borderColor:'#059669',backgroundColor:'rgba(5,150,105,.1)',fill:true,tension:.3,pointRadius:3},{label:'Volume',data:mK.map(m=>monthly[m].vol),borderColor:'#2563EB',yAxisID:'y1',tension:.3,pointRadius:3}]},options:{responsive:true,maintainAspectRatio:false,scales:{y:{ticks:{callback:v=>fmt(v)}},y1:{position:'right',grid:{display:false},ticks:{callback:v=>fmt(v)}}}}});}
+
+// ══════════════════════════════════════════════════════════════
+// BUDGET TAB
+// ══════════════════════════════════════════════════════════════
+function buildBudget(R){
+const bal=R.balances;const ini=R.initial;const eq=R.equation;const tl=R.timeline;const pq=bal.pendingQueue||[];
+const sumO=o=>Object.values(o||{}).reduce((a,v)=>a+v,0);
+const sumRM=rv=>Object.values(rv||{}).reduce((a,r)=>a+(r.mru||0),0);
+const pendMRU=pq.reduce((a,p)=>a+V(p.Amount_mru_h),0);
+// Opening
+const oC=sumO(ini.cash);const oW=sumO(ini.wallet);const oB=sumO(ini.bank);
+const oR=ini.opening_receivable?Object.values(ini.opening_receivable).reduce((a,r)=>a+(r.mru||0),0):0;
+const oCF=ini.client_float||0;const openEq=oC+oW+oB+oR-oCF;
+// Closing
+const cC=sumO(bal.cash);const cW=sumO(bal.wallet);const cB=sumO(bal.bank);const cR=sumRM(bal.receivable);
+const cCF=bal.client_float;const closeEq=eq.netPosition;
+const delta=closeEq-openEq;const deltaPct=openEq?((delta/openEq)*100).toFixed(2):'0';
+// Integrity check
+const checkOpen=oC+oW+oB+oR-oCF;
+const integrityOk=Math.abs(checkOpen-openEq)<1;
+
+let h=renderWalletBar();
+if(!integrityOk)h+=`<div class="alert alert-red" style="margin-bottom:12px">Opening equity integrity check failed: expected ${fmt(openEq)}, got ${fmt(checkOpen)}</div>`;
+
+// Opening + Today blocks side by side
+h+=`<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:18px">`;
+// Opening
+h+=`<div class="sec"><h3>Opening Position</h3><table style="font-size:12px"><tbody>
+<tr><td>Caisses</td><td class="n">${fmt(oC)}</td></tr>
+<tr><td>Wallets</td><td class="n">${fmt(oW)}</td></tr>
+<tr><td>Bank</td><td class="n">${fmt(oB)}</td></tr>
+<tr><td>Opening Receivables</td><td class="n">${fmt(oR)}</td></tr>
+<tr><td>Client Float (liability)</td><td class="n neg">-${fmt(oCF)}</td></tr>
+<tr style="font-weight:700;border-top:2px solid var(--border)"><td>Opening Equity</td><td class="n" style="font-size:18px">${fmt(openEq)}</td></tr>
+</tbody></table></div>`;
+// Today
+h+=`<div class="sec"><h3>Current Position</h3><table style="font-size:12px"><tbody>
+<tr><td>Caisses</td><td class="n">${fmt(cC)}</td></tr>
+<tr><td>Wallets</td><td class="n ${cW<0?'neg':''}">${fmt(cW)}</td></tr>
+<tr><td>Bank</td><td class="n">${fmt(cB)}</td></tr>
+<tr><td>Receivables</td><td class="n">${fmt(cR)}</td></tr>
+<tr><td>Client Float</td><td class="n neg">-${fmt(cCF)}</td></tr>
+<tr><td>Pending Payouts</td><td class="n neg">-${fmt(pendMRU)}</td></tr>
+<tr style="font-weight:700;border-top:2px solid var(--border)"><td>Current Equity</td><td class="n" style="font-size:18px">${fmt(closeEq)}</td></tr>
+<tr><td>Change</td><td class="n ${delta>=0?'pos':'neg'}" style="font-weight:700;font-size:15px">${delta>=0?'+':''}${fmt(delta)} (${deltaPct}%)</td></tr>
+</tbody></table></div>`;
+h+=`</div>`;
+
+// Equity curve from timeline
+h+=`<div class="sec"><h3>Equity Curve</h3><div class="cw tall"><canvas id="budget-chart"></canvas></div></div>`;
+
+// Daily table from timeline — group by date, take last snapshot per day
+const byDay={};tl.forEach(t=>{byDay[t.date]=t;});
+const days=Object.keys(byDay).sort();
+h+=`<div class="sec"><h3>Daily Equity Table</h3><div style="max-height:400px;overflow-y:auto"><table style="font-size:11px"><thead><tr><th>Date</th><th class="n">Caisses</th><th class="n">Wallets</th><th class="n">Bank</th><th class="n">Recv</th><th class="n">-Float</th><th class="n">Equity</th><th class="n">vs Start</th><th class="n">Daily</th></tr></thead><tbody>`;
+let prevEq=openEq;
+days.forEach(d=>{const s=byDay[d];const dayEq=s.netPosition;const vsStart=dayEq-openEq;const daily=dayEq-prevEq;
+const bigDrop=daily<-openEq*0.02;
+h+=`<tr${bigDrop?' style="background:var(--red-light)"':''}><td>${d.slice(5,10)}</td><td class="n">${fmt(s.cashTotal)}</td><td class="n">${fmt(s.walletTotal)}</td><td class="n">${fmt(s.bankTotal)}</td><td class="n">${fmt(s.recvTotal)}</td><td class="n neg">${fmt(s.client_float)}</td><td class="n" style="font-weight:600">${fmt(dayEq)}</td><td class="n ${vsStart>=0?'pos':'neg'}">${vsStart>=0?'+':''}${fmt(vsStart)}</td><td class="n ${daily>=0?'pos':'neg'}">${daily>=0?'+':''}${fmt(daily)}</td></tr>`;
+prevEq=dayEq;});
+h+=`</tbody></table></div></div>`;
+
+// Equity drop alert
+const minEq=days.reduce((a,d)=>Math.min(a,byDay[d].netPosition),openEq);
+if(minEq<openEq*0.9){const dropDay=days.find(d=>byDay[d].netPosition<=minEq);
+bal.alerts.push({severity:'red',date:dropDay,id:'EQUITY',msg:`Equity fell below 90% of opening on ${dropDay}: ${fmt(minEq)} (${((minEq-openEq)/openEq*100).toFixed(1)}%)`});}
+
+h+=`<div class="pdf-bar"><button class="btn-pdf" onclick="exportPDF(2,'Cadorim_Budget')">Export Budget PDF</button></div>`;
+document.getElementById('p2').innerHTML=h;
+
+// Chart
+const eqData=days.map(d=>byDay[d].netPosition);
+new Chart(document.getElementById('budget-chart'),{type:'line',data:{labels:days.map(d=>d.slice(5,10)),datasets:[
+{label:'Equity',data:eqData,borderColor:'#059669',backgroundColor:'rgba(5,150,105,.1)',fill:true,tension:.3,pointRadius:2,borderWidth:2},
+{label:'Opening',data:days.map(()=>openEq),borderColor:'var(--muted)',borderDash:[5,3],pointRadius:0,borderWidth:1}
+]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{size:11}}}},scales:{y:{ticks:{callback:v=>fmt(v)}}}}});}
+
+// ══════════════════════════════════════════════════════════════
+// TREASURY TAB
+// ══════════════════════════════════════════════════════════════
+function buildTreasury(R){const bal=R.balances;const eq=R.equation;const alerts=bal.alerts||[];const totalProfit=bal.profit_l1+bal.profit_l2;
+const tComm=R.txResults.reduce((a,t)=>a+(t.commission_a||0),0);const tCost=R.txResults.reduce((a,t)=>a+(t.cost_payout_a||0),0);const tFx=R.txResults.reduce((a,t)=>a+(t.fx_gain_a||0),0);const tL2=R.settlements.reduce((a,s)=>a+(s.gain_sett_s||0),0);
+let h=renderWalletBar();
+h+=`<div class="eq"><strong>Assets:</strong> ${fmt(eq.assets)} &minus; <strong>Liabilities:</strong> ${fmt(eq.liabilities)} = <strong style="color:var(--green)">Net: ${fmt(eq.netPosition)} MRU</strong></div>`;
+if(alerts.length){h+=`<div class="sec" style="border-left:3px solid var(--red)"><h3 style="color:var(--red)">Alerts (${alerts.length})</h3>`;alerts.forEach(a=>{h+=`<div class="alert alert-${a.severity}">[${a.date} ${a.id}] ${a.msg}</div>`;});h+=`</div>`;}
+h+=`<div class="cards">
+<div class="card" onclick="toggle('dc')"><div class="lb"><span class="badge b-a">Asset</span> Cash</div><div class="vl">${fmt(eq.cashTotal)}</div></div>
+<div class="card" onclick="toggle('dw')"><div class="lb"><span class="badge b-a">Asset</span> Wallet</div><div class="vl vb">${fmt(eq.walletTotal)}</div></div>
+<div class="card" onclick="toggle('dr')"><div class="lb"><span class="badge b-a">Asset</span> Recv</div><div class="vl vo">${fmt(eq.recvTotal)}</div></div>
+<div class="card" onclick="toggle('db')"><div class="lb"><span class="badge b-a">Asset</span> Bank</div><div class="vl vb">${fmt(eq.bankTotal)}</div></div>
+<div class="card" onclick="toggle('dcl')"><div class="lb"><span class="badge b-l">Liab</span> Client</div><div class="vl vr">${fmt(bal.client_float)}</div></div>
+<div class="card" onclick="toggle('dag')"><div class="lb"><span class="badge b-l">Liab</span> Agent</div><div class="vl vr">${fmt(bal.agent_balance)}</div></div>
+<div class="card" onclick="toggle('dpnl')"><div class="lb"><span class="badge b-e">P&L</span></div><div class="vl vg">${fmt(totalProfit)}</div></div>
+</div>`;
+// Drills
+h+=`<div id="dc" class="sec drill"><h3>Cash</h3><table><thead><tr><th>Caisse</th><th class="n">Initial</th><th class="n">Balance</th><th>Status</th></tr></thead><tbody>`;
+for(const[k,v]of Object.entries(bal.cash)){const ini=R.initial.cash[k]||0;h+=`<tr${v<0?' style="background:var(--yellow-light)"':''}><td>${k}</td><td class="n">${fmt(ini)}</td><td class="n ${cls(v)}">${fmt(v)}</td><td>${v<0?'<span class="neg">NEGATIVE</span>':v<ini*.1?'<span style="color:var(--yellow)">LOW</span>':'OK'}</td></tr>`;}
+h+=`</tbody></table></div>`;
+h+=`<div id="dw" class="sec drill"><h3>Wallet Float</h3><table><thead><tr><th>Wallet</th><th class="n">Initial</th><th class="n">Final</th><th class="n">Alloc Total</th><th class="n">Used Total</th><th class="n">Available</th><th>Status</th></tr></thead><tbody>`;
+for(const[k,v]of Object.entries(bal.wallet)){const ini=R.initial.wallet[k]||0;
+const chCode='sim_'+k;const pU=R.plafondUsage||{};const rules=(R.config.plafonds||[]).filter(p=>p.channel===chCode);
+const allocT=rules.reduce((a,r)=>a+V(r.plafond),0);const usedT=rules.reduce((a,r)=>a+(pU[r.partner+'|'+r.channel]||0),0);
+const avail=Math.min(Math.max(0,v),Math.max(0,allocT-usedT));
+const st=v<0?'<span class="neg" style="font-weight:700">TOP UP</span>':avail<1?'<span style="color:var(--yellow)">EXHAUSTED</span>':avail<ini*0.1?'<span style="color:var(--yellow)">LOW</span>':'OK';
+h+=`<tr${v<0?' style="background:var(--red-light)"':''}><td>${k}</td><td class="n">${fmt(ini)}</td><td class="n ${cls(v)}">${fmt(v)}</td><td class="n">${fmt(allocT)}</td><td class="n">${fmt(usedT)}</td><td class="n" style="font-weight:600">${fmt(avail)}</td><td>${st}</td></tr>`;
+// Per-partner rows with blocked count
+const queued=R.pendingQueue||[];
+if(rules.length){h+=`<tr><td colspan="7" style="padding:4px 20px"><div style="font-size:11px">`;
+rules.forEach(r=>{const key=r.partner+'|'+r.channel;const used=pU[key]||0;const cap=V(r.plafond);const pct=cap>0?Math.round(used/cap*100):0;const barCol=pct>90?'var(--red)':pct>70?'var(--yellow)':'var(--green)';const rem=Math.max(0,cap-used);
+const bCount=queued.filter(t=>t.Par_l===r.partner&&t.Local_Par_n===chCode&&t.status==='pending').length;
+const bVol=queued.filter(t=>t.Par_l===r.partner&&t.Local_Par_n===chCode&&t.status==='pending').reduce((a,t)=>a+V(t.Amount_mru_h),0);
+h+=`<div style="display:flex;align-items:center;gap:6px;margin:3px 0"><span style="width:90px;font-weight:500">${r.partner.replace('sim_','')}</span><span style="width:70px;text-align:right">${fmt(cap)} cap</span><div style="flex:1;height:12px;background:#eee;border-radius:3px;overflow:hidden"><div style="width:${Math.min(pct,100)}%;height:100%;background:${barCol}"></div></div><span style="width:110px;text-align:right;font-size:10px">${fmt(used)} used | ${fmt(rem)} left</span>${bCount?`<span style="color:var(--red);font-size:10px;width:90px">${bCount} blocked (${fmt(bVol)})</span>`:''}</div>`;});
+h+=`</div></td></tr>`;}}
+h+=`</tbody></table></div>`;
+const tSetts=R.settlements||[];
+h+=`<div id="dr" class="sec drill"><h3>Receivables</h3><table><thead><tr><th>Partner</th><th class="n">Foreign</th><th class="n">MRU</th><th>Cur</th><th class="n">Settled</th><th>Bank</th><th>Status</th></tr></thead><tbody>`;
+for(const[k,v]of Object.entries(bal.receivable)){const settled=tSetts.filter(s=>s.Par_l===k).reduce((a,s)=>a+V(s.Amount_s),0);const banks=[...new Set(tSetts.filter(s=>s.Par_l===k).map(s=>(s.Bank_t||'').replace('sim_','')))].join(', ');const isNeg=v.foreign<0;
+h+=`<tr${isNeg?' style="background:var(--red-light)"':''}><td>${k.replace('sim_','')}</td><td class="n ${isNeg?'neg':''}">${f2(v.foreign)}</td><td class="n ${isNeg?'neg':''}">${fmt(v.mru)}</td><td>${v.currency}</td><td class="n">${f2(settled)}</td><td>${banks||'-'}</td><td>${isNeg?'<span class="neg" style="font-weight:600">OVERPAID</span>':v.foreign<1?'<span class="pos">CLEAR</span>':'Pending'}</td></tr>`;}
+h+=`</tbody></table></div>`;
+h+=`<div id="db" class="sec drill"><h3>Bank</h3><table><thead><tr><th>Bank</th><th class="n">Initial</th><th class="n">Sett In</th><th class="n">WD Out</th><th class="n">Balance</th></tr></thead><tbody>`;
+for(const[k,v]of Object.entries(bal.bank)){const ini=R.initial.bank[k]||0;const sIn=bal.events.filter(e=>e.event==='settlement'&&e.Bank_t===k).reduce((a,e)=>a+(e.mru_received||0),0);const wOut=bal.events.filter(e=>e.event==='withdrawal'&&e.bank===k).reduce((a,e)=>a+V(e.amount),0);
+h+=`<tr><td>${k}</td><td class="n">${fmt(ini)}</td><td class="n pos">+${fmt(sIn)}</td><td class="n neg">-${fmt(wOut)}</td><td class="n ${cls(v)}">${fmt(v)}</td></tr>`;}
+h+=`</tbody></table></div>`;
+const aCash=bal.events.filter(e=>e.type==='agent_cashout').reduce((a,e)=>a+V(e.Amount_mru_h),0);const aRef=bal.events.filter(e=>e.type==='agent_refund').reduce((a,e)=>a+V(e.Amount_mru_h),0);
+h+=`<div id="dcl" class="sec drill"><h3>Client & Agent</h3><table><thead><tr><th>Position</th><th class="n">In</th><th class="n">Out</th><th class="n">Net</th></tr></thead><tbody>
+<tr><td>Client Float</td><td class="n">${fmt(bal.events.filter(e=>e.type==='b2c_deposit').reduce((a,e)=>a+V(e.Amount_mru_h),0))}</td><td class="n">${fmt(bal.events.filter(e=>e.type==='b2c_payout'||e.type==='wallet_cashout').reduce((a,e)=>a+V(e.Amount_mru_h),0))}</td><td class="n">${fmt(bal.client_float)}</td></tr>
+<tr${bal.agent_balance>0?' style="background:var(--red-light)"':''}><td>Agent</td><td class="n neg">-${fmt(aCash)}</td><td class="n pos">+${fmt(aRef)}</td><td class="n ${cls(bal.agent_balance)}">${fmt(bal.agent_balance)}</td></tr></tbody></table></div>`;
+h+=`<div id="dag" class="sec drill"></div>`;
+h+=`<div id="dpnl" class="sec drill"><h3>P&L</h3><table><thead><tr><th>Source</th><th class="n">Comm</th><th class="n">Cost</th><th class="n">FX</th><th class="n">Net</th></tr></thead><tbody>
+<tr><td>L1 (${R.txResults.length} txns)</td><td class="n">${f2(tComm)}</td><td class="n neg">${f2(tCost)}</td><td class="n pos">${f2(tFx)}</td><td class="n ${cls(bal.profit_l1)}">${f2(bal.profit_l1)}</td></tr>
+<tr><td>L2 (${R.settlements.length} sett)</td><td></td><td></td><td class="n pos">${f2(tL2)}</td><td class="n pos">${f2(bal.profit_l2)}</td></tr>
+<tr style="font-weight:700;border-top:2px solid var(--border)"><td>TOTAL</td><td class="n">${f2(tComm)}</td><td class="n neg">${f2(tCost)}</td><td class="n pos">${f2(tFx+tL2)}</td><td class="n ${cls(totalProfit)}">${f2(totalProfit)}</td></tr></tbody></table></div>`;
+// Timeline
+h+=`<div class="sec"><h3>Timeline</h3><div class="cw tall"><canvas id="tl"></canvas></div></div>`;
+h+=`<div class="pdf-bar"><button class="btn-pdf" onclick="exportPDF(3,'Cadorim_Treasury_Dashboard')">Export Treasury PDF</button></div>`;
+document.getElementById('p3').innerHTML=h;
+const dates=[...new Set(R.timeline.map(t=>t.date))];const byD={};dates.forEach(d=>{const ls=R.timeline.filter(t=>t.date===d);byD[d]=ls[ls.length-1];});const da=Object.keys(byD).sort();
+new Chart(document.getElementById('tl'),{type:'line',data:{labels:da,datasets:[
+{label:'Cash',data:da.map(d=>byD[d].cashTotal),borderColor:'#059669',fill:false,tension:.3,pointRadius:2},
+{label:'Wallet',data:da.map(d=>byD[d].walletTotal),borderColor:'#2563EB',fill:false,tension:.3,pointRadius:2},
+{label:'Recv',data:da.map(d=>byD[d].recvTotal),borderColor:'#D97706',fill:false,tension:.3,pointRadius:2},
+{label:'Bank',data:da.map(d=>byD[d].bankTotal),borderColor:'#6366f1',fill:false,tension:.3,pointRadius:2},
+{label:'Client',data:da.map(d=>byD[d].client_float),borderColor:'#DC2626',borderDash:[5,3],fill:false,tension:.3,pointRadius:2},
+{label:'Agent',data:da.map(d=>byD[d].agent_balance),borderColor:'#64748b',borderDash:[5,3],fill:false,tension:.3,pointRadius:2},
+{label:'Net Pos',data:da.map(d=>byD[d].netPosition),borderColor:'#7C3AED',borderWidth:3,fill:false,tension:.3,pointRadius:2},
+{label:'Pending Queue',data:da.map(d=>byD[d].pendingVolume||0),borderColor:'#DC2626',borderDash:[3,3],borderWidth:2,fill:false,tension:.3,pointRadius:1},
+]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{usePointStyle:true,font:{size:11}}}},scales:{x:{ticks:{maxTicksLimit:12}},y:{ticks:{callback:v=>fmt(v)}}}}});}
+
+// ══════════════════════════════════════════════════════════════
+// OPERATIONS TAB
+// ══════════════════════════════════════════════════════════════
+function buildOps(R){const txs=R.txResults;const pq=R.pendingQueue||[];const blocked=pq;const pUsage=R.plafondUsage||{};const cfg=R.config;const pRules=R.plafondRules||cfg.plafonds||[];const autoActs=R.autoActions||[];
+const byCh={};txs.forEach(t=>{const c=(t.Local_Par_n||'none').replace('sim_','');if(!byCh[c])byCh[c]={n:0,vol:0,cost:0};byCh[c].n++;byCh[c].vol+=V(t.Amount_mru_h);byCh[c].cost+=t.cost_payout_a||0;});
+const cK=Object.keys(byCh).sort((a,b)=>byCh[b].vol-byCh[a].vol);
+const daily={};txs.forEach(t=>{if(!t.date)return;const d=t.date.slice(0,10);if(!daily[d])daily[d]={n:0,vol:0};daily[d].n++;daily[d].vol+=V(t.Amount_mru_h);});const dK=Object.keys(daily).sort();
+
+// Plafond status table
+let h=renderWalletBar();
+if(pRules.length){
+const priCol=['','#059669','#2563EB','#CA8A04','#D97706','#DC2626'];const fWal=R.balances.wallet||{};
+h+=`<div class="sec" style="border-left:3px solid var(--accent)"><h3>Plafond Status</h3><table style="font-size:12px"><thead><tr><th>Channel</th><th>Partner</th><th class="n">Cap</th><th class="n">Used</th><th class="n">Remaining</th><th class="n">%</th><th class="n">Ch Bal</th><th class="n">Blocked</th><th>Pri</th></tr></thead><tbody>`;
+pRules.forEach(p=>{const key=p.partner+'|'+p.channel;const used=pUsage[key]||0;const cap=V(p.plafond);
+const rem=cap>0?Math.max(0,cap-used):0;const pct=cap>0?Math.round(used/cap*100):cap===0?100:0;
+const chKey=p.channel.replace('sim_','');const chBal=fWal[chKey]||0;
+const bC=blocked.filter(t=>t.Par_l===p.partner&&t.Local_Par_n===p.channel).length;
+const bV=blocked.filter(t=>t.Par_l===p.partner&&t.Local_Par_n===p.channel).reduce((a,t)=>a+V(t.Amount_mru_h),0);
+const rowBg=cap===0?'var(--red-light)':pct>90?'var(--red-light)':pct>70?'var(--yellow-light)':'';
+h+=`<tr style="${rowBg?'background:'+rowBg:''}"><td>${chKey}</td><td>${p.partner.replace('sim_','')}</td><td class="n">${cap===0?'Blocked':fmt(cap)}</td><td class="n">${fmt(used)}</td><td class="n">${cap===0?'-':fmt(rem)}</td><td class="n">${cap>0?pct+'%':'-'}</td><td class="n">${fmt(chBal)}</td><td class="n">${bC?`<span class="neg">${bC} (${fmt(bV)})</span>`:'-'}</td><td><span style="display:inline-block;width:18px;height:18px;border-radius:50%;background:${priCol[p.priority]||'#999'};color:#fff;text-align:center;line-height:18px;font-size:10px;font-weight:700">${p.priority}</span></td></tr>`;
+});h+=`</tbody></table></div>`;}
+// Queue Performance
+if(pq.length){const rels=pq.filter(p=>p.status==='released');const pends=pq.filter(p=>p.status==='pending');
+const avgW=rels.length?Math.round(rels.reduce((a,p)=>a+(p.timeInQueue||0),0)/rels.length*10)/10:0;
+const maxW=pq.reduce((a,p)=>Math.max(a,p.timeInQueue||0),0);
+h+=`<div class="sec"><h3>Queue Performance</h3><div class="cards" style="margin-bottom:10px">
+<div class="card"><div class="lb">Total Queued</div><div class="vl">${pq.length}</div></div>
+<div class="card"><div class="lb">Released</div><div class="vl vg">${rels.length} (${pq.length?Math.round(rels.length/pq.length*100):0}%)</div></div>
+<div class="card"><div class="lb">Still Pending</div><div class="vl ${pends.length?'vr':'vg'}">${pends.length}</div></div>
+<div class="card"><div class="lb">Avg Wait</div><div class="vl">${avgW}d</div></div>
+<div class="card"><div class="lb">Max Wait</div><div class="vl" style="color:${maxW>7?'var(--red)':'var(--green)'}">${maxW}d</div></div>
+<div class="card"><div class="lb">Auto Top-ups</div><div class="vl vb">${autoActs.length}</div><div class="sb">${fmt(autoActs.reduce((a,x)=>a+V(x.amount),0))} MRU</div></div>
+</div>
+<table style="font-size:12px"><thead><tr><th>ID</th><th>Date</th><th>Partner</th><th>Channel</th><th class="n">Amount</th><th>Pri</th><th>Status</th><th>Wait</th><th>Reason</th></tr></thead><tbody>`;
+pq.sort((a,b)=>a.arrived.localeCompare(b.arrived)).forEach(p=>{const isR=p.status==='released';const wait=isR?p.timeInQueue+'d':'pending';
+h+=`<tr style="background:${isR?'var(--green-light)':'var(--red-light)'}"><td>${p.id}</td><td>${(p.arrived||'').slice(5,10)}</td><td>${p.Par_l.replace('sim_','')}</td><td>${(p.Local_Par_n||'').replace('sim_','')}</td><td class="n">${fmt(p.Amount_mru_h)}</td><td>${p.priority}</td><td style="font-weight:600;color:${isR?'var(--green)':'var(--red)'}">${isR?'RELEASED':'PENDING'}</td><td style="font-weight:600">${wait}</td><td style="font-size:11px">${isR?p.releasedBy:p.reasonDetail||p.reason}</td></tr>`;});
+h+=`</tbody></table></div>`;}
+h+=`<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px">
+<div class="sec"><h3>Channel Volume</h3><div class="cw"><canvas id="ops-c"></canvas></div></div>
+<div class="sec"><h3>Daily Volume</h3><div class="cw"><canvas id="ops-d"></canvas></div></div></div>`;
+h+=`<div class="sec"><h3>Channel Cost</h3><table><thead><tr><th>Channel</th><th class="n">Txns</th><th class="n">Volume</th><th class="n">Cost</th><th class="n">Avg/Txn</th></tr></thead><tbody>`;
+cK.forEach(c=>{const d=byCh[c];h+=`<tr><td>${c}</td><td class="n">${d.n}</td><td class="n">${fmt(d.vol)}</td><td class="n">${f2(d.cost)}</td><td class="n">${f2(d.n?d.cost/d.n:0)}</td></tr>`;});
+h+=`</tbody></table></div>`;
+// Paginated transaction log — prevents browser freeze on 15k+ rows
+const OPS_PAGE=200;let opsOff=0;const opsSorted=[...txs].sort((a,b)=>(a.date||'').localeCompare(b.date||''));
+window._opsData=opsSorted;window._opsRender=function(off){
+if(off===undefined)off=opsOff;opsOff=Math.max(0,Math.min(off,opsSorted.length-OPS_PAGE));
+const page=opsSorted.slice(opsOff,opsOff+OPS_PAGE);const tb=document.getElementById('ops-tbody');if(!tb)return;
+tb.innerHTML=page.map(t=>`<tr><td>${t.id||''}</td><td>${(t.date||'').slice(5,10)}</td><td>${(t.type||'').slice(0,12)}</td><td>${(t.Par_l||'').replace('sim_','')}</td><td>${(t.Local_Par_n||'').replace('sim_','').slice(0,15)}</td><td class="n">${fmt(t.Amount_mru_h)}</td><td class="n">${f2(t.commission_a||0)}</td><td class="n">${f2(t.cost_payout_a||0)}</td><td class="n">${f2(t.fx_gain_a||0)}</td><td class="n ${cls(t.profit_transaction_a)}">${f2(t.profit_transaction_a||0)}</td></tr>`).join('');
+const ft=document.getElementById('ops-footer');if(ft)ft.textContent=`Showing ${opsOff+1}–${opsOff+page.length} of ${opsSorted.length}`;};
+h+=`<div class="sec"><h3>Transaction Log (${txs.length})</h3>
+<div style="display:flex;gap:8px;margin-bottom:8px;align-items:center;font-size:12px">
+<button class="btn btn-outline" style="padding:4px 10px" onclick="window._opsRender(opsOff-200)">Prev</button>
+<span id="ops-footer">Showing 1–${Math.min(OPS_PAGE,txs.length)} of ${txs.length}</span>
+<button class="btn btn-outline" style="padding:4px 10px" onclick="window._opsRender(opsOff+200)">Next</button>
+</div>
+<div style="max-height:500px;overflow-y:auto"><table><thead><tr><th>ID</th><th>Date</th><th>Type</th><th>Partner</th><th>Ch</th><th class="n">MRU</th><th class="n">Comm</th><th class="n">Cost</th><th class="n">FX</th><th class="n">Profit</th></tr></thead><tbody id="ops-tbody"></tbody></table></div></div>`;
+h+=`<div class="pdf-bar"><button class="btn-pdf" onclick="exportPDF(4,'Cadorim_Operations_Dashboard')">Export Operations PDF</button></div>`;
+document.getElementById('p4').innerHTML=h;
+if(window._opsRender)window._opsRender(0);
+new Chart(document.getElementById('ops-c'),{type:'bar',data:{labels:cK,datasets:[{data:cK.map(c=>byCh[c].vol),backgroundColor:PC}]},options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{ticks:{callback:v=>fmt(v)}}}}});
+new Chart(document.getElementById('ops-d'),{type:'bar',data:{labels:dK,datasets:[{label:'Vol',data:dK.map(d=>daily[d].vol),backgroundColor:'#2563EB'},{label:'Count',data:dK.map(d=>daily[d].n),type:'line',borderColor:'#D97706',yAxisID:'y1',tension:.3,pointRadius:2}]},options:{responsive:true,maintainAspectRatio:false,scales:{x:{ticks:{maxTicksLimit:15}},y:{ticks:{callback:v=>fmt(v)}},y1:{position:'right',grid:{display:false}}}}});}
+
+// ══════════════════════════════════════════════════════════════
+// POSITIONS TAB
+// ══════════════════════════════════════════════════════════════
+function buildPositions(R){
+if(!R.partnerLedgers)return;
+let h=renderWalletBar();
+// Partner Position Table
+h+=`<div class="sec"><h3>Partner Positions</h3><table style="font-size:12px"><thead><tr><th></th><th>Partner</th><th>Type</th><th class="n">Txns</th><th class="n">Foreign Vol</th><th class="n">MRU Vol</th><th class="n">L1 Profit</th><th class="n">L2 Profit</th><th class="n">Total</th><th class="n">Opening</th><th class="n">Receivable</th><th class="n">Margin</th></tr></thead><tbody>`;
+for(const[code,lg]of Object.entries(R.partnerLedgers)){
+const isI=lg.config.is_international;const txs=lg.entries.filter(e=>e.event==='transaction');const txC=txs.length;
+const fVol=isI?txs.reduce((a,e)=>a+(e.foreignAmount||0),0):null;
+const mVol=txs.reduce((a,e)=>a+Math.abs(e.mruAmount||0),0);
+const total=lg.totalL1+lg.totalL2;const margin=mVol>0?(total/mVol*100).toFixed(2):'0.00';
+const recv=isI?f2(lg.runRecvF)+' '+lg.config.currency:'-';
+const openR=SIM_INITIAL.opening_receivable?.[code];
+h+=`<tr style="cursor:pointer" onclick="toggle('pl_${code}')"><td style="color:var(--blue)">&#9654;</td><td><strong>${code.replace('sim_','')}</strong></td><td>${isI?'Intl':code.includes('sndp')?'B2C':code.includes('agent')?'Agent':'Natl'}</td><td class="n">${txC}</td><td class="n">${isI?f2(fVol)+' '+lg.config.currency:'-'}</td><td class="n">${fmt(mVol)}</td><td class="n ${cls(lg.totalL1)}">${f2(lg.totalL1)}</td><td class="n">${isI?f2(lg.totalL2):'-'}</td><td class="n ${cls(total)}" style="font-weight:700">${f2(total)}</td><td class="n">${isI&&openR?f2(openR.foreign)+' '+lg.config.currency:'-'}</td><td class="n" style="color:var(--accent)">${recv}</td><td class="n">${margin}%</td></tr>`;
+// Drill-down: full ledger
+h+=`<tr><td colspan="12"><div id="pl_${code}" class="drill" style="padding:10px">`;
+if(isI){
+  // International: dual-currency ledger
+  const postedC=lg.entries.filter(e=>e.event==='transaction').length;const pendC=(R.balances.pendingQueue||[]).filter(p=>p.partner===code).length;
+  h+=`<div style="font-size:12px;margin-bottom:8px"><strong>${code.replace('sim_','')} (${lg.config.currency})</strong> — L1: ${f2(lg.totalL1)} + L2: ${f2(lg.totalL2)} = <strong>${f2(total)}</strong> | Recv: ${f2(lg.runRecvF)} ${lg.config.currency} (${fmt(lg.runRecvM)} MRU) | Posted: ${postedC}${pendC?' | <span style="color:var(--red)">Pending: '+pendC+'</span>':''}</div>`;
+  const oR=SIM_INITIAL.opening_receivable?.[code];
+  h+=`<table style="font-size:11px"><thead><tr><th>#</th><th>Date</th><th>ID</th><th>Channel</th><th class="n">${lg.config.currency}</th><th class="n">Rate</th><th class="n">MRU</th><th class="n">Comm</th><th class="n">Cost</th><th class="n">FX</th><th class="n">Profit</th><th class="n">Recv ${lg.config.currency}</th><th class="n">Recv MRU</th></tr></thead><tbody>`;
+  if(oR){h+=`<tr style="background:var(--surface-alt);font-style:italic"><td></td><td></td><td></td><td>OPENING BALANCE</td><td></td><td></td><td></td><td colspan="4"></td><td class="n" style="font-weight:600">${f2(oR.foreign)}</td><td class="n">${fmt(oR.mru)}</td></tr>`;}
+  lg.entries.forEach(e=>{
+    const dStr=e.created_at!==e.posted_at?`<span title="${e.created_at} → ${e.posted_at}">${(e.created_at||'').slice(5,10)} → ${(e.posted_at||'').slice(5,10)}</span>`:`<span title="${e.posted_at}">${(e.posted_at||'').slice(5,10)}</span>`;
+    const qTag=e.status==='released'&&e.timeInQueue>0?` <span style="font-size:9px;color:var(--muted)">(queued ${e.timeInQueue}d)</span>`:'';
+    if(e.event==='transaction'){h+=`<tr${e.status==='released'?' style="border-left:3px solid var(--green)"':''}><td>${e.seq}</td><td>${dStr}${qTag}</td><td>${e.id}</td><td>${e.channel}</td><td class="n">${f2(e.foreignAmount)}</td><td class="n">${e.fxRate}</td><td class="n">${fmt(e.mruAmount)}</td><td class="n">${f2(e.commission)}</td><td class="n neg">${f2(e.cost)}</td><td class="n pos">${f2(e.fxGain)}</td><td class="n ${cls(e.profit)}">${f2(e.profit)}</td><td class="n" style="font-weight:600">${f2(e.recvF)}</td><td class="n">${fmt(e.recvM)}</td></tr>`;}
+    else if(e.event==='settlement'){h+=`<tr style="background:var(--purple-light)"><td></td><td>${(e.posted_at||'').slice(5,10)}</td><td>${e.id}</td><td style="color:var(--purple);font-weight:600">SETT &rarr; ${(e.bank||'').replace('sim_','')}</td><td class="n neg">${f2(e.foreignAmount)}</td><td class="n">${e.fxRate}</td><td class="n">${fmt(e.mruAmount)}</td><td colspan="3" class="n" style="font-size:10px;color:var(--purple)">L2 gain: ${f2(e.l2Gain)}</td><td></td><td class="n" style="font-weight:600">${f2(e.recvF)}</td><td class="n">${fmt(e.recvM)}</td></tr>`;}
+  });
+  h+=`</tbody></table>`;
+  // L2 section
+  const setts=lg.entries.filter(e=>e.event==='settlement');
+  if(setts.length){h+=`<div style="margin-top:12px;border-left:3px solid var(--purple);padding-left:12px"><h3 style="color:var(--purple);font-size:13px">Layer 2 — Settlements</h3><table style="font-size:11px"><thead><tr><th>ID</th><th>Date</th><th class="n">${lg.config.currency}</th><th class="n">FX Sett</th><th class="n">FX Ref</th><th class="n">MRU Recv</th><th class="n">MRU@Ref</th><th class="n">L2 Gain</th><th>Bank</th></tr></thead><tbody>`;
+  setts.forEach(s=>{h+=`<tr><td>${s.id}</td><td>${(s.date||'').slice(0,10)}</td><td class="n">${f2(Math.abs(s.foreignAmount))}</td><td class="n">${s.fxRate}</td><td class="n">${s.fxRef}</td><td class="n">${fmt(s.mruAmount)}</td><td class="n">${fmt(s.mruAtRef)}</td><td class="n pos">${f2(s.l2Gain)}</td><td style="font-weight:500">${(s.bank||'').replace('sim_','').toUpperCase()}</td></tr>`;});
+  h+=`</tbody></table></div>`;}
+}else{
+  // National: single-currency MRU
+  const runCol=code.includes('agent')?'Agent Bal':code.includes('sndp')?'Float':'';
+  const postedN=lg.entries.filter(e=>e.event==='transaction').length;const pendN=(R.balances.pendingQueue||[]).filter(p=>p.partner===code).length;
+  h+=`<div style="font-size:12px;margin-bottom:8px"><strong>${code.replace('sim_','')}</strong> — Profit: ${f2(lg.totalL1)} | Posted: ${postedN}${pendN?' | <span style="color:var(--red)">Pending: '+pendN+'</span>':''}</div>`;
+  h+=`<table style="font-size:11px"><thead><tr><th>#</th><th>Date</th><th>ID</th><th>Type</th><th>Channel</th><th class="n">MRU</th><th class="n">Comm</th><th class="n">Cost</th><th class="n">Profit</th>${runCol?`<th class="n">${runCol}</th>`:''}</tr></thead><tbody>`;
+  lg.entries.forEach(e=>{
+    if(e.event==='transaction'){const sign=e.type==='b2c_deposit'||e.type==='agent_refund'?'+':'-';
+    const dStr2=e.created_at!==e.posted_at?`${(e.created_at||'').slice(5,10)} → ${(e.posted_at||'').slice(5,10)}`:(e.posted_at||'').slice(5,10);
+    const qTag2=e.status==='released'&&e.timeInQueue>0?` <span style="font-size:9px;color:var(--muted)">(${e.timeInQueue}d)</span>`:'';
+    h+=`<tr${e.status==='released'?' style="border-left:3px solid var(--green)"':''}><td>${e.seq}</td><td title="${e.created_at} → ${e.posted_at}">${dStr2}${qTag2}</td><td>${e.id}</td><td>${e.type}</td><td>${e.channel}</td><td class="n">${sign}${fmt(e.mruAmount)}</td><td class="n">${f2(e.commission)}</td><td class="n neg">${f2(e.cost)}</td><td class="n ${cls(e.profit)}">${f2(e.profit)}</td>${runCol?`<td class="n" style="font-weight:600">${fmt(code.includes('agent')?e.agentBal:e.float)}</td>`:''}</tr>`;}
+  });
+  h+=`</tbody></table>`;}
+h+=`</div></td></tr>`;}
+h+=`</tbody></table></div>`;
+
+// Bank Positions
+h+=`<div class="sec"><h3>Bank Positions</h3><table style="font-size:12px"><thead><tr><th></th><th>Bank</th><th class="n">Opening</th><th class="n">Sett In</th><th class="n">WD Out</th><th class="n">Closing</th><th>Check</th></tr></thead><tbody>`;
+for(const[bk,bl]of Object.entries(R.bankLedgers)){
+const check=Math.round(bl.opening+bl.totalIn-bl.totalOut);const actual=Math.round(bl.runBal);const ok=Math.abs(check-actual)<1;
+h+=`<tr style="cursor:pointer" onclick="toggle('bl_${bk}')"><td style="color:var(--blue)">&#9654;</td><td><strong>${bk.replace('sim_','')}</strong></td><td class="n">${fmt(bl.opening)}</td><td class="n pos">+${fmt(bl.totalIn)}</td><td class="n neg">-${fmt(bl.totalOut)}</td><td class="n" style="font-weight:700">${fmt(bl.runBal)}</td><td style="color:${ok?'var(--green)':'var(--red)'}"><b>${ok?'\\u2713':'\\u2717'}</b></td></tr>`;
+// Bank ledger drill-down
+h+=`<tr><td colspan="7"><div id="bl_${bk}" class="drill" style="padding:10px">`;
+h+=`<table style="font-size:11px"><thead><tr><th>#</th><th>Date</th><th>ID</th><th>Type</th><th>Partner/Dest</th><th class="n">Foreign</th><th class="n">FX</th><th class="n pos">MRU In</th><th class="n neg">MRU Out</th><th class="n">Balance</th></tr></thead><tbody>`;
+h+=`<tr style="background:var(--surface-alt)"><td></td><td></td><td></td><td>OPENING</td><td></td><td></td><td></td><td></td><td></td><td class="n" style="font-weight:700">${fmt(bl.opening)}</td></tr>`;
+bl.entries.forEach((e,i)=>{const isSett=e.type==='settlement';
+h+=`<tr${isSett?' style="background:var(--purple-light)"':''}><td>${i+1}</td><td>${(e.date||'').slice(0,10)}</td><td>${e.id}</td><td>${e.type}</td><td>${isSett?(e.partner||'').replace('sim_','')+' ('+f2(e.foreignAmount)+' '+(e.currency||'')+' × '+e.fxRate+')':'→ '+(e.destination||'')}</td><td class="n">${isSett?f2(e.foreignAmount)+' '+(e.currency||''):''}</td><td class="n">${isSett?e.fxRate:''}</td><td class="n pos">${e.mruIn?'+'+fmt(e.mruIn):''}</td><td class="n neg">${e.mruOut?'-'+fmt(e.mruOut):''}</td><td class="n" style="font-weight:600">${fmt(e.balance)}</td></tr>`;});
+h+=`<tr style="font-weight:700;border-top:2px solid var(--border)"><td></td><td></td><td></td><td>TOTAL</td><td></td><td></td><td></td><td class="n pos">+${fmt(bl.totalIn)}</td><td class="n neg">-${fmt(bl.totalOut)}</td><td class="n">${fmt(bl.runBal)}</td></tr>`;
+h+=`<tr><td colspan="10" style="font-size:11px;color:${ok?'var(--green)':'var(--red)'}">CHECK: ${fmt(bl.opening)} + ${fmt(bl.totalIn)} - ${fmt(bl.totalOut)} = ${fmt(check)} ${ok?'\\u2713':'\\u2717 (actual: '+fmt(actual)+')'}</td></tr>`;
+h+=`</tbody></table></div></td></tr>`;}
+h+=`</tbody></table></div>`;
+h+=`<div class="pdf-bar"><button class="btn-pdf" onclick="exportPDF(5,'Cadorim_Positions')">Export Positions PDF</button></div>`;
+document.getElementById('p5').innerHTML=h;}
+
+function exportPDF(tabIndex, filename){
+  const tabNames=['Setup','CEO','Budget','Treasury','Operations','Positions'];
+  const el=document.getElementById('p'+tabIndex);
+  if(!el){alert('Tab not found');return;}
+  // Open all drill-downs for Treasury so they appear in PDF
+  if(tabIndex===2){el.querySelectorAll('.drill').forEach(d=>d.classList.add('open'));}
+  // Hide PDF buttons and action buttons during export
+  el.querySelectorAll('.pdf-bar,.actions,.btn-add,.btn-remove').forEach(e=>e.style.display='none');
+  toast('Generating PDF...');
+  const opt={
+    margin:[10,10,10,10],
+    filename: filename+'_'+new Date().toISOString().slice(0,10)+'.pdf',
+    image:{type:'jpeg',quality:0.98},
+    html2canvas:{scale:2,useCORS:true,scrollY:0,windowWidth:1300},
+    jsPDF:{unit:'mm',format:'a3',orientation:'landscape'},
+    pagebreak:{mode:['avoid-all','css','legacy']}
+  };
+  html2pdf().set(opt).from(el).save().then(()=>{
+    // Restore hidden elements
+    el.querySelectorAll('.pdf-bar').forEach(e=>e.style.display='flex');
+    el.querySelectorAll('.actions').forEach(e=>e.style.display='flex');
+    el.querySelectorAll('.btn-add').forEach(e=>e.style.display='');
+    el.querySelectorAll('.btn-remove').forEach(e=>e.style.display='');
+    toast(tabNames[tabIndex]+' PDF saved');
+  });
+}
+function exportAllPDFs(){
+  const tabs=[0,1,2,3];let i=0;
+  function next(){if(i>=tabs.length)return;exportPDF(tabs[i],['Cadorim_Setup','Cadorim_CEO_Dashboard','Cadorim_Treasury_Dashboard','Cadorim_Operations_Dashboard'][i]);i++;setTimeout(next,3000);}
+  next();
+}
+function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.style.display='block';setTimeout(()=>t.style.display='none',2500);}
+// Data source toggle
+let activeSource='sim';
+function switchDataSource(src){
+const banner=document.getElementById('data-banner');
+const btns={sim:document.getElementById('btn-sim'),ria:document.getElementById('btn-ria'),all:document.getElementById('btn-all')};
+function setActive(key){Object.entries(btns).forEach(([k,b])=>{if(!b)return;b.style.background=k===key?'var(--accent)':'var(--surface)';b.style.color=k===key?'#fff':'var(--muted)';});}
+const files={ria:'./data/production_data_ria.json',all:'./data/production_data_all.json'};
+if(src==='ria'||src==='all'){
+  const url=files[src];
+  fetch(url).then(r=>{if(!r.ok)throw new Error(r.status);return r.json()}).then(d=>{
+    SIM_TXS.length=0;d.transactions.forEach(t=>SIM_TXS.push(t));
+    SIM_SETT.length=0;(d.settlements||[]).forEach(s=>SIM_SETT.push(s));
+    SIM_WD.length=0;(d.withdrawals||[]).forEach(w=>SIM_WD.push(w));
+    Object.assign(SIM_INITIAL,d.opening);
+    activeSource=src;setActive(src);
+    const nP=d.config?.layer1?.length||0;const nT=d.transactions.length;
+    const nCh=d.config?.layer1?.reduce((a,p)=>a+(p.channels?.length||0),0)||0;
+    banner.style.display='block';banner.style.background='var(--blue-light)';banner.style.color='var(--blue)';
+    banner.innerHTML=`Production (${src==='all'?'All Partners':'Ria Only'}): ${nT.toLocaleString()} txns · ${nP} partners · ${nCh} channels · ${(d.generated_at||'').slice(0,10)}`;
+    if(d.config){loadFromDict(d.config);}else{loadFromDict(SIM_CONFIG);}
+    runEngine();
+  }).catch(err=>{
+    banner.style.display='block';banner.style.background='var(--yellow-light)';banner.style.color='var(--yellow)';
+    banner.innerHTML=`Production data (${src}) not available: ${err.message}`;
+  });
+}else{
+  activeSource='sim';setActive('sim');banner.style.display='none';location.reload();
+}}
+// ══════════════════════════════════════════════════════════════
+// CHECK RIA L1 — daily reconciliation tab
+// ══════════════════════════════════════════════════════════════
+let rl1Index=null,rl1CurDate=null;
+function loadRiaL1Checks(){
+  if(rl1Index){rl1RenderForDate(rl1CurDate||rl1Index.available_dates.slice(-1)[0]);return;}
+  fetch('data/ria_l1_checks.json').then(r=>{
+    if(!r.ok)throw new Error('HTTP '+r.status);return r.json();
+  }).then(j=>{
+    rl1Index=j;
+    const dates=j.available_dates||[];
+    const last=dates.length?dates[dates.length-1]:'';
+    const inp=document.getElementById('rl1-date');
+    if(dates.length){inp.min=dates[0];inp.max=last;inp.value=last;}
+    inp.addEventListener('change',()=>rl1RenderForDate(inp.value));
+    rl1RenderForDate(last);
+    rl1RenderQueue();
+  }).catch(err=>{
+    document.getElementById('rl1-banner-msg').textContent='Fichier ria_l1_checks.json introuvable. Lancer: python -m cadorim_engine.checks.build_check_index';
+  });
+}
+function rl1PrevDay(){
+  if(!rl1Index)return;
+  const i=rl1Index.available_dates.indexOf(rl1CurDate);
+  if(i>0){rl1CurDate=rl1Index.available_dates[i-1];document.getElementById('rl1-date').value=rl1CurDate;rl1RenderForDate(rl1CurDate);}
+}
+function rl1NextDay(){
+  if(!rl1Index)return;
+  const i=rl1Index.available_dates.indexOf(rl1CurDate);
+  if(i>=0&&i<rl1Index.available_dates.length-1){rl1CurDate=rl1Index.available_dates[i+1];document.getElementById('rl1-date').value=rl1CurDate;rl1RenderForDate(rl1CurDate);}
+}
+function rl1RenderForDate(d){
+  rl1CurDate=d;
+  if(!rl1Index||!rl1Index.by_date[d]){
+    document.getElementById('rl1-banner').className='rl1-banner AMBER';
+    document.getElementById('rl1-banner').querySelector('.badge').textContent='—';
+    document.getElementById('rl1-banner-msg').textContent='Aucune donnée pour cette date.';
+    ['rl1-c-ria','rl1-c-cad','rl1-c-match','rl1-c-mcad','rl1-c-mria'].forEach(id=>document.getElementById(id).textContent='—');
+    document.getElementById('rl1-tbody').innerHTML='<tr><td colspan="10" style="padding:24px;text-align:center;color:var(--muted)">Pas de donnée</td></tr>';
+    return;
+  }
+  const r=rl1Index.by_date[d];
+  // Banner
+  const b=document.getElementById('rl1-banner');
+  b.className='rl1-banner '+r.verdict;
+  b.querySelector('.badge').textContent=r.verdict;
+  document.getElementById('rl1-banner-msg').textContent=r.message;
+  // Cards
+  const fmt=n=>n==null?'—':n.toLocaleString('fr-FR',{maximumFractionDigits:0});
+  const fmt2=n=>n==null?'—':n.toLocaleString('fr-FR',{minimumFractionDigits:2,maximumFractionDigits:2});
+  document.getElementById('rl1-c-ria').textContent=r.n_ria;
+  document.getElementById('rl1-c-ria-sub').textContent=`${fmt2(r.eur_total_ria)} MRU`;
+  document.getElementById('rl1-c-cad').textContent=r.n_cadorim;
+  document.getElementById('rl1-c-cad-sub').textContent=`${fmt2(r.eur_total_cadorim_est)} MRU`;
+  document.getElementById('rl1-c-match').textContent=r.n_matched;
+  const delTxt=r.n_matched_delayed?` (${r.n_matched_delayed} tardives)`:'';
+  document.getElementById('rl1-c-match-sub').textContent=`/ ${Math.max(r.n_ria,r.n_cadorim)} possible${delTxt}`;
+  document.getElementById('rl1-c-mcad').textContent=r.n_missing_in_cadorim;
+  document.getElementById('rl1-c-pend').textContent=r.n_pending_ria!=null?r.n_pending_ria:'—';
+  document.getElementById('rl1-c-pend-sub').textContent='en attente confirmation Ria';
+  document.getElementById('rl1-c-mria').textContent=r.n_missing_in_ria;
+  // Actions
+  const ac=document.getElementById('rl1-actions');
+  if(r.actions&&r.actions.length){
+    ac.style.display='';
+    document.getElementById('rl1-actions-body').innerHTML=r.actions.map(a=>
+      `<div class="a"><b>${a.status}</b> (${a.count}) — ${a.message}</div>`).join('');
+  }else{ac.style.display='none';}
+  // Table
+  rl1RenderTable();
+}
+function rl1RenderTable(){
+  if(!rl1Index||!rl1Index.by_date[rl1CurDate])return;
+  const lines=rl1Index.by_date[rl1CurDate].lines||[];
+  const fStatus=document.getElementById('rl1-flt-status').value;
+  const fLoc=document.getElementById('rl1-flt-locpar').value.toLowerCase().trim();
+  const fBen=document.getElementById('rl1-flt-ben').value.toLowerCase().trim();
+  const filt=lines.filter(l=>(
+    (!fStatus||l.status===fStatus)&&
+    (!fLoc||(l.local_par_n||'').toLowerCase().includes(fLoc))&&
+    (!fBen||(l.beneficiary||'').toLowerCase().includes(fBen))
+  ));
+  document.getElementById('rl1-rowcount').textContent=`${filt.length} / ${lines.length} lignes`;
+  const tb=document.getElementById('rl1-tbody');
+  if(!filt.length){tb.innerHTML='<tr><td colspan="11" style="padding:24px;text-align:center;color:var(--muted)">Aucune ligne</td></tr>';return;}
+  const fmt2=n=>n?n.toLocaleString('fr-FR',{minimumFractionDigits:2,maximumFractionDigits:2}):'';
+  const ageOrDelay=l=>{
+    if(l.status==='MATCH_DELAYED'&&l.delay_days)return `+${l.delay_days}j`;
+    if((l.status==='PENDING_RIA'||l.status==='MISSING_RIA')&&l.age_days)return `${l.age_days}j`;
+    return '';
+  };
+  tb.innerHTML=filt.map(l=>`<tr>
+    <td><span class="st st-${l.status}">${l.status}</span></td>
+    <td style="font-family:monospace">${l.pin||''}</td>
+    <td>${(l.beneficiary||'').slice(0,40)}</td>
+    <td class="n">${fmt2(l.eur_ria)}</td>
+    <td class="n">${fmt2(l.eur_cadorim)}</td>
+    <td class="n">${fmt2(l.diff_amount)}</td>
+    <td class="n">${fmt2(l.comm_eur_ria)}</td>
+    <td class="n">${fmt2(l.comm_eur_cadorim)}</td>
+    <td style="font-family:monospace;font-size:11px">${l.local_par_n||''}</td>
+    <td style="font-family:monospace;font-size:11px">${l.cadorim_id||''}</td>
+    <td class="n" style="font-size:11px;color:var(--muted)">${ageOrDelay(l)}</td>
+  </tr>`).join('');
+}
+
+// ── Pending Queue (transversal across all dates) ─────────────────────────
+function rl1BuildQueue(){
+  // Aggregate all PENDING_RIA and MISSING_RIA lines across all dates
+  if(!rl1Index)return [];
+  const out=[];
+  for(const d of rl1Index.available_dates){
+    const r=rl1Index.by_date[d];
+    if(!r||!r.lines)continue;
+    for(const l of r.lines){
+      if(l.status==='PENDING_RIA'||l.status==='MISSING_RIA'){
+        out.push(Object.assign({}, l, {date: l.journal_date || d}));
+      }
+    }
+  }
+  // Sort by date descending (most recent first)
+  out.sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+  return out;
+}
+function rl1RenderQueue(){
+  const queue=rl1BuildQueue();
+  const fStatus=document.getElementById('rl1q-flt-status').value;
+  const fAge=parseInt(document.getElementById('rl1q-flt-age').value)||0;
+  const filt=queue.filter(l=>(!fStatus||l.status===fStatus)&&((l.age_days||0)>=fAge));
+  document.getElementById('rl1q-rowcount').textContent=`${filt.length} / ${queue.length} lignes`;
+  const tb=document.getElementById('rl1q-tbody');
+  if(!filt.length){tb.innerHTML='<tr><td colspan="8" style="padding:24px;text-align:center;color:var(--muted)">Aucune transaction en attente</td></tr>';return;}
+  const fmt2=n=>n?n.toLocaleString('fr-FR',{minimumFractionDigits:2,maximumFractionDigits:2}):'';
+  tb.innerHTML=filt.map(l=>`<tr>
+    <td><span class="st st-${l.status}">${l.status}</span></td>
+    <td style="font-family:monospace;font-size:12px">${l.date||''}</td>
+    <td style="font-family:monospace">${l.pin||''}</td>
+    <td>${(l.beneficiary||'').slice(0,42)}</td>
+    <td class="n">${fmt2(l.eur_cadorim)}</td>
+    <td style="font-family:monospace;font-size:11px">${l.local_par_n||''}</td>
+    <td style="font-family:monospace;font-size:11px">${l.cadorim_id||''}</td>
+    <td class="n">${l.age_days||0}</td>
+  </tr>`).join('');
+}
+function rl1ExportQueueCsv(){
+  const queue=rl1BuildQueue();
+  const fStatus=document.getElementById('rl1q-flt-status').value;
+  const fAge=parseInt(document.getElementById('rl1q-flt-age').value)||0;
+  const filt=queue.filter(l=>(!fStatus||l.status===fStatus)&&((l.age_days||0)>=fAge));
+  const hdr=['date','status','pin','beneficiary','eur_cadorim','local_par_n','cadorim_id','age_days'];
+  const csv=[hdr.join(',')];
+  for(const l of filt){
+    csv.push([l.date||'',l.status,l.pin||'','"'+(l.beneficiary||'').replace(/"/g,'""')+'"',l.eur_cadorim||0,l.local_par_n||'',l.cadorim_id||'',l.age_days||0].join(','));
+  }
+  const blob=new Blob([csv.join('\n')],{type:'text/csv'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');a.href=url;a.download=`pending_ria_queue.csv`;a.click();URL.revokeObjectURL(url);
+}
+function rl1ExportCsv(){
+  if(!rl1Index||!rl1Index.by_date[rl1CurDate])return;
+  const lines=rl1Index.by_date[rl1CurDate].lines||[];
+  const hdr=['date','status','pin','beneficiary','eur_ria','eur_cadorim','diff_amount','comm_eur_ria','comm_eur_cadorim','local_par_n','cadorim_id'];
+  const csv=[hdr.join(',')];
+  for(const l of lines){
+    csv.push([rl1CurDate,l.status,l.pin,'"'+(l.beneficiary||'').replace(/"/g,'""')+'"',l.eur_ria,l.eur_cadorim,l.diff_amount,l.comm_eur_ria,l.comm_eur_cadorim,l.local_par_n,l.cadorim_id].join(','));
+  }
+  const blob=new Blob([csv.join('\n')],{type:'text/csv'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');a.href=url;a.download=`check_ria_l1_${rl1CurDate}.csv`;a.click();URL.revokeObjectURL(url);
+}
+
+// ══════════════════════════════════════════════════════════════
+// CHECK RIA L2 — daily SWIFT↔BMI reconciliation
+// ══════════════════════════════════════════════════════════════
+let rl2Index=null;
+function loadRiaL2Checks(){
+  if(rl2Index){rl2Render();return;}
+  fetch('data/ria_l2_checks.json').then(r=>{
+    if(!r.ok)throw new Error('HTTP '+r.status);return r.json();
+  }).then(j=>{rl2Index=j;rl2Render();})
+   .catch(err=>{
+    document.getElementById('rl2-banner-msg').textContent='Fichier ria_l2_checks.json introuvable. Lancer: python -m cadorim_engine.checks.build_l2_index';
+   });
+}
+function rl2Render(){
+  const r=rl2Index;
+  const fmt=n=>n==null?'—':n.toLocaleString('fr-FR',{maximumFractionDigits:0});
+  const spread=(r.fx_avg_matched||0)-(r.fx_internal||42.5);
+  const verdict=r.n_swift_in_transit>0?'AMBER':'GREEN';
+  const b=document.getElementById('rl2-banner');
+  b.className='rl1-banner '+verdict;
+  b.querySelector('.badge').textContent=verdict;
+  document.getElementById('rl2-banner-msg').textContent=
+    `Période ${r.period_from} → ${r.period_to} · ${r.n_matched} matches · ${r.n_swift_in_transit} SWIFT en transit · ${r.n_bmi_orphan} BMI orphelins · Gain L2 ${fmt(r.gain_l2_total)} MRU (spread +${spread.toFixed(2)} MRU/EUR)`;
+  // Cards
+  document.getElementById('rl2-c-eur').textContent=fmt(r.eur_total_matched);
+  document.getElementById('rl2-c-eur-sub').textContent=`${r.n_matched} matches`;
+  document.getElementById('rl2-c-mru').textContent=fmt(r.mru_total_matched);
+  document.getElementById('rl2-c-mru-sub').textContent=`FX moyen ${(r.fx_avg_matched||0).toFixed(2)}`;
+  document.getElementById('rl2-c-internal').textContent=fmt(r.mru_at_internal_total||0);
+  document.getElementById('rl2-c-fx').textContent=(r.fx_avg_matched||0).toFixed(2);
+  document.getElementById('rl2-c-fx-sub').textContent=`min ${(r.fx_min||0).toFixed(2)} / max ${(r.fx_max||0).toFixed(2)}`;
+  document.getElementById('rl2-c-gain').textContent=fmt(r.gain_l2_total);
+  document.getElementById('rl2-c-gain-sub').textContent=`spread +${spread.toFixed(2)} MRU/EUR`;
+  // Monthly — sort descending
+  const months=Object.entries(r.gain_l2_by_month||{}).sort((a,b)=>b[0].localeCompare(a[0]));
+  const mtb=document.getElementById('rl2-month-tbody');
+  mtb.innerHTML=months.length?months.map(([m,g])=>{
+    const eur=(r.eur_by_month||{})[m]||0;
+    const bmi=(r.mru_bmi_by_month||{})[m]||0;
+    const pct=bmi>0?(g/bmi*100):0;
+    return `<tr>
+      <td style="font-family:monospace">${m}</td>
+      <td class="n">${fmt(eur)}</td>
+      <td class="n" style="color:var(--muted)">${fmt(bmi)}</td>
+      <td class="n" style="color:#37b56a">${fmt(g)}</td>
+      <td class="n">${pct.toFixed(2)}%</td>
+    </tr>`;
+  }).join(''):'<tr><td colspan="5">—</td></tr>';
+  rl2RenderTable();
+}
+function rl2RenderTable(){
+  if(!rl2Index)return;
+  const fStatus=document.getElementById('rl2-flt-status').value;
+  // Build unified row list: matches + unmatched_swifts + unmatched_bmis
+  const matches=(rl2Index.matches||[]).map(m=>Object.assign({_kind:'match',status:'MATCHED'},m));
+  const swiftsOnly=(rl2Index.unmatched_swifts||[]).map(s=>({_kind:'swift_only',status:'SWIFT_NO_BMI',swift_date:s.date,eur:s.amount,bmi_date:'',mru:0,lag_days:'',fx_implicit:0,gain_mru:0,swift_ref:s.reference}));
+  const bmisOnly=(rl2Index.unmatched_bmis||[]).map(b=>({_kind:'bmi_only',status:'BMI_NO_SWIFT',swift_date:'',eur:0,bmi_date:b.date,mru:b.amount,lag_days:'',fx_implicit:0,gain_mru:0,swift_ref:''}));
+  let all=[...matches,...swiftsOnly,...bmisOnly];
+  // Filter
+  if(fStatus==='LAG_GT_0'){all=all.filter(r=>r._kind==='match'&&(r.lag_days||0)>0);}
+  else if(fStatus){all=all.filter(r=>r.status===fStatus);}
+  // Sort by relevant date descending (use bmi_date for matches and bmi-only, swift_date for swift-only)
+  all.sort((a,b)=>{
+    const da=a.bmi_date||a.swift_date||'';
+    const db=b.bmi_date||b.swift_date||'';
+    return db.localeCompare(da);
+  });
+  document.getElementById('rl2-rowcount').textContent=`${all.length} lignes (${matches.length} matchés / ${swiftsOnly.length} transit / ${bmisOnly.length} orphelins)`;
+  const fmt2=n=>n==null||n===0?'—':n.toLocaleString('fr-FR',{minimumFractionDigits:2,maximumFractionDigits:2});
+  const tb=document.getElementById('rl2-tbody');
+  if(!all.length){tb.innerHTML='<tr><td colspan="9" style="padding:24px;text-align:center;color:var(--muted)">Aucune ligne</td></tr>';return;}
+  tb.innerHTML=all.map(r=>{
+    const stCls={'MATCHED':'st-MATCH','SWIFT_NO_BMI':'st-PENDING_RIA','BMI_NO_SWIFT':'st-MISSING_CADORIM'}[r.status]||'st-MATCH';
+    const gainColor=r.gain_l2_mru>0?'color:#37b56a':r.gain_l2_mru<0?'color:#ff6669':'';
+    return `<tr>
+      <td><span class="st ${stCls}">${r.status}</span></td>
+      <td style="font-family:monospace">${r.swift_date||'—'}</td>
+      <td class="n">${r.eur?fmt2(r.eur):'—'}</td>
+      <td style="font-family:monospace">${r.bmi_date||'—'}</td>
+      <td class="n">${r.mru?fmt2(r.mru):'—'}</td>
+      <td class="n">${r.fx_implicit?r.fx_implicit.toFixed(4):'—'}</td>
+      <td class="n">${r.mru_at_internal?fmt2(r.mru_at_internal):'—'}</td>
+      <td class="n" style="${gainColor}">${r.gain_l2_mru?fmt2(r.gain_l2_mru):'—'}</td>
+      <td class="n" style="color:var(--muted)">${r.lag_days===''||r.lag_days==null?'—':r.lag_days+'j'}</td>
+      <td style="font-family:monospace;font-size:11px">${r.swift_ref||''}</td>
+    </tr>`;
+  }).join('');
+}
+function rl2ExportCsv(){
+  if(!rl2Index)return;
+  const matches=(rl2Index.matches||[]).map(m=>Object.assign({status:'MATCHED'},m));
+  const swiftsOnly=(rl2Index.unmatched_swifts||[]).map(s=>({status:'SWIFT_NO_BMI',swift_date:s.date,eur:s.amount,bmi_date:'',mru:0,lag_days:'',fx_implicit:'',gain_mru:'',swift_ref:s.reference}));
+  const bmisOnly=(rl2Index.unmatched_bmis||[]).map(b=>({status:'BMI_NO_SWIFT',swift_date:'',eur:'',bmi_date:b.date,mru:b.amount,lag_days:'',fx_implicit:'',gain_mru:'',swift_ref:''}));
+  const all=[...matches,...swiftsOnly,...bmisOnly];
+  const hdr=['status','swift_date','eur','bmi_date','mru','lag_days','fx_implicit','gain_mru','swift_ref'];
+  const csv=[hdr.join(',')];
+  for(const r of all){csv.push([r.status,r.swift_date||'',r.eur||'',r.bmi_date||'',r.mru||'',r.lag_days||'',r.fx_implicit||'',r.gain_mru||'',r.swift_ref||''].join(','));}
+  const blob=new Blob([csv.join('\n')],{type:'text/csv'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');a.href=url;a.download='check_ria_l2.csv';a.click();URL.revokeObjectURL(url);
+}
+
+// ══════════════════════════════════════════════════════════════
+// CHECK TERRAPAY L2 — date aggregate Cado02 USDC vs Cadorim
+// ══════════════════════════════════════════════════════════════
+let tpl2Index=null;
+function loadTPL2Checks(){
+  if(tpl2Index){tpl2Render();return;}
+  fetch('data/terrapay_l2_checks.json').then(r=>{
+    if(!r.ok)throw new Error('HTTP '+r.status);return r.json();
+  }).then(j=>{tpl2Index=j;tpl2Render();})
+   .catch(err=>{
+    document.getElementById('tpl2-banner-msg').textContent='Fichier terrapay_l2_checks.json introuvable. Lancer: python -m cadorim_engine.checks.build_l2_terrapay_index --from 2026-01-01 --to 2026-03-31';
+   });
+}
+function tpl2Render(){
+  const r=tpl2Index;
+  const fmt=n=>n==null?'—':n.toLocaleString('fr-FR',{maximumFractionDigits:0});
+  const spread=(r.fx_market_weighted_avg||0)-(r.fx_internal||39.5);
+  const verdict='GREEN';
+  const b=document.getElementById('tpl2-banner');
+  b.className='rl1-banner '+verdict;
+  b.querySelector('.badge').textContent=verdict;
+  document.getElementById('tpl2-banner-msg').textContent=
+    `Période ${r.period_from} → ${r.period_to} · ${r.n_settlements} settlements · USDC reçu: ${fmt(r.usdc_total)} · FX Binance moyen ${r.fx_market_weighted_avg} (vs ${r.fx_internal} interne) · Gain L2 ${fmt(r.gain_l2_total)} MRU (spread +${spread.toFixed(2)})`;
+  // Cards
+  document.getElementById('tpl2-c-usdc').textContent=fmt(r.usdc_total);
+  document.getElementById('tpl2-c-usdc-sub').textContent=`${r.n_settlements} settlements`;
+  document.getElementById('tpl2-c-recv').textContent=fmt(r.mru_at_internal_total);
+  document.getElementById('tpl2-c-binance').textContent=fmt(r.mru_at_market_total);
+  document.getElementById('tpl2-c-binance-sub').textContent=`FX moyen ${r.fx_market_weighted_avg}`;
+  document.getElementById('tpl2-c-gain').textContent=fmt(r.gain_l2_total);
+  document.getElementById('tpl2-c-gain-sub').textContent=`spread +${spread.toFixed(2)} MRU/USDC`;
+  document.getElementById('tpl2-c-fx').textContent=(r.fx_market_weighted_avg||0).toFixed(2);
+  document.getElementById('tpl2-c-fx-sub').textContent=`min ${(r.fx_market_min||0).toFixed(2)} / max ${(r.fx_market_max||0).toFixed(2)}`;
+  // Monthly
+  const months=Object.entries(r.gain_l2_by_month||{}).sort((a,b)=>b[0].localeCompare(a[0]));
+  const mtb=document.getElementById('tpl2-month-tbody');
+  mtb.innerHTML=months.length?months.map(([m,g])=>{
+    const usdc=(r.usdc_by_month||{})[m]||0;
+    const recv=(r.mru_market_by_month||{})[m]||0;
+    const pct=recv>0?(g/recv*100):0;
+    return `<tr>
+      <td style="font-family:monospace">${m}</td>
+      <td class="n">${fmt(usdc)}</td>
+      <td class="n">${fmt(recv)}</td>
+      <td class="n" style="color:#37b56a">${fmt(g)}</td>
+      <td class="n">${pct.toFixed(2)}%</td>
+    </tr>`;
+  }).join(''):'<tr><td colspan="5">—</td></tr>';
+  tpl2RenderTable();
+}
+function tpl2RenderTable(){
+  if(!tpl2Index)return;
+  let all=(tpl2Index.settlements||[]).slice().sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+  document.getElementById('tpl2-rowcount').textContent=`${all.length} settlements`;
+  const fmt2=n=>n==null||n===0?'—':n.toLocaleString('fr-FR',{minimumFractionDigits:2,maximumFractionDigits:2});
+  const tb=document.getElementById('tpl2-tbody');
+  if(!all.length){tb.innerHTML='<tr><td colspan="8" style="padding:24px;text-align:center;color:var(--muted)">Aucune ligne</td></tr>';return;}
+  tb.innerHTML=all.map(s=>{
+    const gainColor=s.gain_l2_mru>0?'color:#37b56a':s.gain_l2_mru<0?'color:#ff6669':'';
+    const srcStyle=s.fx_market_source===s.date?'color:#37b56a':'color:#e7b14b';
+    return `<tr>
+      <td style="font-family:monospace">${s.date||''}</td>
+      <td class="n">${fmt2(s.usdc)}</td>
+      <td class="n">${s.fx_market?s.fx_market.toFixed(4):'—'}</td>
+      <td style="font-family:monospace;font-size:11px;${srcStyle}">${s.fx_market_source||''}</td>
+      <td class="n">${fmt2(s.mru_at_market)}</td>
+      <td class="n" style="color:var(--muted)">${fmt2(s.mru_at_internal)}</td>
+      <td class="n" style="${gainColor}">${fmt2(s.gain_l2_mru)}</td>
+      <td style="font-family:monospace;font-size:11px;color:var(--muted)">${(s.reference||'').slice(0,14)}…</td>
+    </tr>`;
+  }).join('');
+}
+function tpl2ExportCsv(){
+  if(!tpl2Index)return;
+  const setts=tpl2Index.settlements||[];
+  const hdr=['date','usdc','fx_market','fx_market_source','mru_at_market','mru_at_internal','gain_l2_mru','reference'];
+  const csv=[hdr.join(',')];
+  for(const s of setts){csv.push([s.date,s.usdc,s.fx_market,s.fx_market_source,s.mru_at_market,s.mru_at_internal,s.gain_l2_mru,s.reference].join(','));}
+  const blob=new Blob([csv.join('\n')],{type:'text/csv'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');a.href=url;a.download='check_terrapay_l2.csv';a.click();URL.revokeObjectURL(url);
+}
+
+// ══════════════════════════════════════════════════════════════
+// MRU/USD EXCHANGE — Binance P2P daily exchange account
+// ══════════════════════════════════════════════════════════════
+let exIndex=null;
+function loadExchangeAccount(){
+  if(exIndex){exRender();return;}
+  fetch('data/mru_usd_exchange.json').then(r=>{
+    if(!r.ok)throw new Error('HTTP '+r.status);return r.json();
+  }).then(j=>{exIndex=j;exRender();})
+   .catch(err=>{
+    document.getElementById('ex-banner-msg').textContent='Fichier mru_usd_exchange.json introuvable. Lancer: python -m cadorim_engine.checks.build_exchange_account --from 2026-01-01 --to 2026-03-31';
+   });
+}
+function exRender(){
+  const r=exIndex;
+  const fmt=n=>n==null?'—':n.toLocaleString('fr-FR',{maximumFractionDigits:0});
+  const fmt2=n=>n==null?'—':n.toLocaleString('fr-FR',{minimumFractionDigits:2,maximumFractionDigits:2});
+  document.getElementById('ex-banner-msg').textContent=
+    `Période ${r.period_from} → ${r.period_to} · ${r.n_sales} ventes USDT→MRU sur ${r.n_days} jours · Taux moyen pondéré ${r.rate_weighted_avg} MRU/USDT (vs 39,5 interne)`;
+  // Cards
+  document.getElementById('ex-c-usdt').textContent=fmt(r.total_usdt_sold);
+  document.getElementById('ex-c-usdt-sub').textContent=`${r.n_sales} ventes`;
+  document.getElementById('ex-c-mru').textContent=fmt(r.total_mru_received);
+  document.getElementById('ex-c-rate').textContent=r.rate_weighted_avg.toFixed(2);
+  document.getElementById('ex-c-range').textContent=`${r.rate_min.toFixed(2)} – ${r.rate_max.toFixed(2)}`;
+  document.getElementById('ex-c-fees').textContent=fmt2(r.total_fees_usdt);
+  // Monthly — desc
+  const mtb=document.getElementById('ex-month-tbody');
+  const months=(r.by_month||[]).slice().sort((a,b)=>b.month.localeCompare(a.month));
+  mtb.innerHTML=months.length?months.map(m=>`<tr>
+    <td style="font-family:monospace">${m.month}</td>
+    <td class="n">${m.n_sales}</td>
+    <td class="n">${fmt(m.usdt)}</td>
+    <td class="n">${fmt(m.mru)}</td>
+    <td class="n">${m.rate_avg.toFixed(4)}</td>
+  </tr>`).join(''):'<tr><td colspan="5">—</td></tr>';
+  // Month filter options
+  const sel=document.getElementById('ex-flt-month');
+  sel.innerHTML='<option value="">Tous</option>' + months.map(m=>`<option value="${m.month}">${m.month}</option>`).join('');
+  exRenderDays();
+}
+function exRenderDays(){
+  if(!exIndex)return;
+  const f=document.getElementById('ex-flt-month').value;
+  let days=(exIndex.by_day||[]).slice();
+  if(f) days=days.filter(d=>d.date.startsWith(f));
+  // Sort descending (most recent first)
+  days.sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+  document.getElementById('ex-rowcount').textContent=`${days.length} jours`;
+  const fmt=n=>n==null?'—':n.toLocaleString('fr-FR',{maximumFractionDigits:0});
+  const fmt4=n=>n==null?'—':n.toLocaleString('fr-FR',{minimumFractionDigits:4,maximumFractionDigits:4});
+  const tb=document.getElementById('ex-day-tbody');
+  if(!days.length){tb.innerHTML='<tr><td colspan="6" style="padding:24px;text-align:center;color:var(--muted)">Aucune ligne</td></tr>';return;}
+  tb.innerHTML=days.map(d=>`<tr>
+    <td style="font-family:monospace">${d.date}</td>
+    <td class="n">${d.n_sales}</td>
+    <td class="n">${fmt(d.usdt_sold)}</td>
+    <td class="n">${fmt(d.mru_received)}</td>
+    <td class="n" style="color:#37b56a">${d.rate_avg.toFixed(4)}</td>
+    <td class="n" style="color:var(--muted)">${fmt4(d.fees)}</td>
+  </tr>`).join('');
+}
+function exExportCsv(){
+  if(!exIndex)return;
+  const days=exIndex.by_day||[];
+  const hdr=['date','n_sales','usdt_sold','mru_received','rate_avg','fees'];
+  const csv=[hdr.join(',')];
+  for(const d of days){csv.push([d.date,d.n_sales,d.usdt_sold,d.mru_received,d.rate_avg,d.fees].join(','));}
+  const blob=new Blob([csv.join('\n')],{type:'text/csv'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');a.href=url;a.download='mru_usd_exchange.csv';a.click();URL.revokeObjectURL(url);
+}
+
+// ══════════════════════════════════════════════════════════════
+// CHECK TERRAPAY L1 — daily reconciliation TerraPay ↔ Cadorim
+// ══════════════════════════════════════════════════════════════
+let tpl1Index=null,tpl1CurDate=null;
+function loadTPL1Checks(){
+  if(tpl1Index){tpl1RenderForDate(tpl1CurDate||tpl1Index.available_dates.slice(-1)[0]);return;}
+  fetch('data/terrapay_l1_checks.json').then(r=>{
+    if(!r.ok)throw new Error('HTTP '+r.status);return r.json();
+  }).then(j=>{
+    tpl1Index=j;
+    const dates=j.available_dates||[];
+    const last=dates.length?dates[dates.length-1]:'';
+    const inp=document.getElementById('tpl1-date');
+    if(dates.length){inp.min=dates[0];inp.max=last;inp.value=last;}
+    inp.addEventListener('change',()=>tpl1RenderForDate(inp.value));
+    tpl1RenderHeadline();
+    tpl1RenderForDate(last);
+  }).catch(err=>{
+    document.getElementById('tpl1-banner-msg').textContent='Fichier terrapay_l1_checks.json introuvable. Lancer: python -m cadorim_engine.checks.build_terrapay_l1_index';
+  });
+}
+function tpl1PrevDay(){
+  if(!tpl1Index)return;
+  const i=tpl1Index.available_dates.indexOf(tpl1CurDate);
+  if(i>0){tpl1CurDate=tpl1Index.available_dates[i-1];document.getElementById('tpl1-date').value=tpl1CurDate;tpl1RenderForDate(tpl1CurDate);}
+}
+function tpl1NextDay(){
+  if(!tpl1Index)return;
+  const i=tpl1Index.available_dates.indexOf(tpl1CurDate);
+  if(i>=0&&i<tpl1Index.available_dates.length-1){tpl1CurDate=tpl1Index.available_dates[i+1];document.getElementById('tpl1-date').value=tpl1CurDate;tpl1RenderForDate(tpl1CurDate);}
+}
+function tpl1RenderHeadline(){
+  const t=tpl1Index.totals||{};
+  const fmt=n=>n==null?'—':n.toLocaleString('fr-FR',{maximumFractionDigits:0});
+  const fmt2=n=>n==null?'—':n.toLocaleString('fr-FR',{minimumFractionDigits:2,maximumFractionDigits:2});
+  document.getElementById('tpl1-c-ntx').textContent=fmt(t.n_tx);
+  document.getElementById('tpl1-c-ndays').textContent=`sur ${t.n_days_active||0} jours actifs`;
+  document.getElementById('tpl1-c-usd').textContent=fmt(t.usd_total);
+  document.getElementById('tpl1-c-usd-sub').textContent='volume période';
+  document.getElementById('tpl1-c-comm').textContent=fmt(t.commission_05pct);
+  document.getElementById('tpl1-c-mru').textContent=fmt(t.mru_at_internal);
+  document.getElementById('tpl1-c-avg').textContent=`${t.avg_tx_per_day||0}`;
+  document.getElementById('tpl1-c-avg-sub').textContent=`${fmt2(t.avg_usd_per_day)} USD/jour`;
+  // Monthly table (sort descending)
+  const months=(tpl1Index.monthly||[]).slice().sort((a,b)=>b.month.localeCompare(a.month));
+  const mtb=document.getElementById('tpl1-month-tbody');
+  mtb.innerHTML=months.length?months.map(m=>`<tr>
+    <td style="font-family:monospace">${m.month}</td>
+    <td class="n">${fmt(m.n_tx)}</td>
+    <td class="n" style="color:var(--muted)">${m.n_days_active}</td>
+    <td class="n">${fmt(m.usd_total)}</td>
+    <td class="n" style="color:#37b56a">${fmt(m.commission_05pct)}</td>
+    <td class="n">${fmt(m.mru_at_internal)}</td>
+    <td class="n" style="color:var(--muted)">${m.avg_tx_per_day}</td>
+    <td class="n" style="color:var(--muted)">${fmt(m.avg_usd_per_day)}</td>
+  </tr>`).join(''):'<tr><td colspan="8">—</td></tr>';
+}
+function tpl1RenderForDate(d){
+  tpl1CurDate=d;
+  if(!tpl1Index||!tpl1Index.by_date[d]){
+    document.getElementById('tpl1-banner').className='rl1-banner AMBER';
+    document.getElementById('tpl1-banner').querySelector('.badge').textContent='—';
+    document.getElementById('tpl1-banner-msg').textContent='Aucune donnée pour cette date.';
+    return;
+  }
+  const r=tpl1Index.by_date[d];
+  const fmt=n=>n==null?'—':n.toLocaleString('fr-FR',{maximumFractionDigits:0});
+  const fmt2=n=>n==null?'—':n.toLocaleString('fr-FR',{minimumFractionDigits:2,maximumFractionDigits:2});
+  const b=document.getElementById('tpl1-banner');
+  b.className='rl1-banner '+r.verdict;
+  b.querySelector('.badge').textContent=r.verdict;
+  document.getElementById('tpl1-banner-msg').textContent=r.message;
+  document.getElementById('tpl1-d-tp').textContent=r.n_terrapay;
+  document.getElementById('tpl1-d-tp-sub').textContent=`${fmt2(r.usd_total_terrapay)} USD`;
+  document.getElementById('tpl1-d-cad').textContent=r.n_cadorim;
+  document.getElementById('tpl1-d-cad-sub').textContent=`${fmt2(r.mru_total_cadorim)} MRU`;
+  document.getElementById('tpl1-d-match').textContent=r.n_matched;
+  document.getElementById('tpl1-d-match-sub').textContent=`/ ${Math.max(r.n_terrapay,r.n_cadorim)} possible`;
+  document.getElementById('tpl1-d-comm').textContent=fmt2((r.usd_total_terrapay||0)*0.005);
+  tpl1RenderTable();
+}
+function tpl1RenderTable(){
+  if(!tpl1Index||!tpl1Index.by_date[tpl1CurDate])return;
+  const lines=tpl1Index.by_date[tpl1CurDate].lines||[];
+  const fStatus=document.getElementById('tpl1-flt-status').value;
+  const filt=lines.filter(l=>!fStatus||l.status===fStatus);
+  document.getElementById('tpl1-rowcount').textContent=`${filt.length} / ${lines.length} lignes`;
+  const fmt2=n=>n==null||n===0?'—':n.toLocaleString('fr-FR',{minimumFractionDigits:2,maximumFractionDigits:2});
+  const tb=document.getElementById('tpl1-tbody');
+  if(!filt.length){tb.innerHTML='<tr><td colspan="11" style="padding:24px;text-align:center;color:var(--muted)">Aucune ligne</td></tr>';return;}
+  tb.innerHTML=filt.map(l=>{
+    const stCls={'MATCH':'st-MATCH','MATCH_DELAYED':'st-MATCH_DELAYED','MISSING_CADORIM':'st-MISSING_CADORIM','MISSING_TERRAPAY':'st-MISSING_RIA','AMOUNT_MISMATCH':'st-AMOUNT_MISMATCH'}[l.status]||'st-MATCH';
+    return `<tr>
+      <td><span class="st ${stCls}">${l.status}</span></td>
+      <td style="font-family:monospace;font-size:11px">${l.tpfn||''}</td>
+      <td style="font-family:monospace;font-size:11px">${l.terrapay_date||'—'}</td>
+      <td style="font-family:monospace;font-size:11px">${l.cadorim_date||'—'}</td>
+      <td class="n">${fmt2(l.usd_terrapay)}</td>
+      <td class="n">${fmt2(l.mru_cadorim)}</td>
+      <td class="n">${l.fx_implicit?l.fx_implicit.toFixed(2):'—'}</td>
+      <td class="n">${fmt2(l.fee_terrapay)}</td>
+      <td class="n">${fmt2(l.frais_cadorim)}</td>
+      <td style="font-family:monospace;font-size:11px">${l.cadorim_type||''}</td>
+      <td class="n" style="color:var(--muted)">${l.delay_days?l.delay_days+'j':''}</td>
+    </tr>`;
+  }).join('');
+}
+function tpl1ExportCsv(){
+  if(!tpl1Index||!tpl1Index.by_date[tpl1CurDate])return;
+  const lines=tpl1Index.by_date[tpl1CurDate].lines||[];
+  const hdr=['date','status','tpfn','terrapay_date','cadorim_date','usd_terrapay','mru_cadorim','fx_implicit','fee_terrapay','frais_cadorim','cadorim_type','delay_days'];
+  const csv=[hdr.join(',')];
+  for(const l of lines){
+    csv.push([tpl1CurDate,l.status,l.tpfn,l.terrapay_date||'',l.cadorim_date||'',l.usd_terrapay,l.mru_cadorim,l.fx_implicit,l.fee_terrapay,l.frais_cadorim,l.cadorim_type,l.delay_days||0].join(','));
+  }
+  const blob=new Blob([csv.join('\n')],{type:'text/csv'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');a.href=url;a.download=`check_terrapay_l1_${tpl1CurDate}.csv`;a.click();URL.revokeObjectURL(url);
+}
+
+// Init
+loadSimulation();
+</script>
+</body>
+</html>

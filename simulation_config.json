@@ -1,0 +1,59 @@
+{
+  "layer1": [
+    {
+      "code": "sim_international",
+      "name": "Simulated International Partner",
+      "is_international": true,
+      "currency": "USD",
+      "commission_type": "percentage",
+      "commission_rate": "0.005",
+      "commission_fixed": "0",
+      "fx_partner_rate": "39.0",
+      "fx_cadorim_rate": "39.5",
+      "fx_market_rate": "39.2",
+      "channels": [
+        {"code": "sim_sedad", "cost_payout": "50", "cost_type": "fixed"},
+        {"code": "sim_click", "cost_payout": "30", "cost_type": "fixed"}
+      ]
+    },
+    {
+      "code": "sim_wallet",
+      "name": "Simulated Wallet (local P2P)",
+      "is_international": false,
+      "currency": "MRU",
+      "commission_type": "fixed",
+      "commission_rate": "0",
+      "commission_fixed": "0",
+      "fx_partner_rate": "0",
+      "fx_cadorim_rate": "0",
+      "fx_market_rate": "0",
+      "channels": [
+        {"code": "sim_internal", "cost_payout": "0", "cost_type": "fixed"}
+      ]
+    },
+    {
+      "code": "sim_agent",
+      "name": "Simulated Agent",
+      "is_international": false,
+      "currency": "MRU",
+      "commission_type": "fixed",
+      "commission_rate": "0",
+      "commission_fixed": "0",
+      "fx_partner_rate": "0",
+      "fx_cadorim_rate": "0",
+      "fx_market_rate": "0",
+      "channels": [
+        {"code": "sim_agent_caisse", "cost_payout": "30", "cost_type": "per_transaction"}
+      ]
+    }
+  ],
+  "layer2": [
+    {
+      "partner_code": "sim_international",
+      "bank_code": "sim_bmi",
+      "currency": "USD",
+      "fx_settlement_rate": "39.3",
+      "fx_reference_rate": "39.0"
+    }
+  ]
+}

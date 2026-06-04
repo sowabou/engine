@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cadorim — Dashboard</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+<style>
+:root{--bg:#F7F5F0;--surface:#FFFFFF;--surface-alt:#F0EDE6;--text:#2D2D2D;--muted:#6B6B6B;--border:#E0DCD4;--accent:#D97706;--blue:#2563EB;--blue-light:#EFF6FF;--green:#059669;--green-light:#ECFDF5;--red:#DC2626;--red-light:#FEF2F2;--yellow:#CA8A04;--yellow-light:#FEF9C3;--purple:#7C3AED;--purple-light:#F5F3FF;--shadow-sm:0 1px 2px rgba(0,0,0,.06);--shadow:0 1px 3px rgba(0,0,0,.1);--r:8px}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--text);line-height:1.5}
+.top-bar{display:flex;justify-content:space-between;align-items:center;padding:20px 32px;max-width:1340px;margin:0 auto}
+.top-bar h1{font-size:20px;font-weight:600} .top-bar h1 span{color:var(--accent)}
+.top-bar a{color:var(--blue);font-size:13px;text-decoration:none} .top-bar a:hover{text-decoration:underline}
+/* Tabs */
+.tab-bar{display:flex;gap:4px;padding:0 32px;max-width:1340px;margin:0 auto 20px}
+.tab{padding:9px 20px;border-radius:20px;font-size:13px;font-weight:500;cursor:pointer;border:1px solid var(--border);background:var(--surface);color:var(--muted);transition:.15s}
+.tab:hover{color:var(--text);border-color:#ccc}
+.tab.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+.page{display:none;padding:0 32px;max-width:1340px;margin:0 auto} .page.active{display:block}
+/* Cards */
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(155px,1fr));gap:12px;margin-bottom:18px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:14px 16px;box-shadow:var(--shadow-sm);cursor:pointer;transition:box-shadow .15s}
+.card:hover{box-shadow:0 4px 12px rgba(0,0,0,.08)}
+.card .lb{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;display:flex;align-items:center;gap:5px}
+.card .vl{font-size:21px;font-weight:700;margin-top:5px;font-variant-numeric:tabular-nums}
+.card .sb{font-size:11px;color:var(--muted);margin-top:2px}
+.badge{display:inline-block;font-size:10px;font-weight:600;padding:1px 6px;border-radius:8px;text-transform:uppercase;letter-spacing:.3px}
+.b-a{background:var(--blue-light);color:var(--blue)} .b-l{background:var(--red-light);color:var(--red)} .b-e{background:var(--green-light);color:var(--green)}
+.vg{color:var(--green)} .vb{color:var(--blue)} .vo{color:var(--accent)} .vr{color:var(--red)} .vp{color:var(--purple)}
+/* Eq bar */
+.eq{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:12px 18px;margin-bottom:18px;font-size:12px;display:flex;align-items:center;gap:6px;flex-wrap:wrap;box-shadow:var(--shadow-sm)}
+/* Sections */
+.sec{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:18px 20px;margin-bottom:16px;box-shadow:var(--shadow-sm)}
+.sec h3{font-size:14px;font-weight:600;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+table{width:100%;border-collapse:collapse;font-size:13px}
+thead th{text-align:left;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);padding:7px 8px;background:var(--surface-alt);border-bottom:2px solid var(--border)}
+tbody td{padding:6px 8px;border-bottom:1px solid var(--border)} tbody tr:hover{background:var(--surface-alt)}
+.n{text-align:right;font-variant-numeric:tabular-nums} .pos{color:var(--green)} .neg{color:var(--red)}
+/* Alerts */
+.alert{padding:10px 16px;border-radius:var(--r);margin-bottom:8px;font-size:12px;font-weight:500;display:flex;gap:8px;align-items:center}
+.alert-red{background:var(--red-light);color:var(--red);border:1px solid #fca5a5}
+.alert-yellow{background:var(--yellow-light);color:var(--yellow);border:1px solid #fde047}
+/* Drill */
+.drill{display:none;margin-top:10px;border-top:1px solid var(--border);padding-top:10px} .drill.open{display:block}
+/* Chart */
+.cw{position:relative;height:300px;margin-top:8px} .cw.tall{height:380px}
+/* No data */
+.nodata{text-align:center;padding:60px;color:var(--muted)} .nodata h2{color:var(--text);margin-bottom:6px}
+/* Filter bar */
+.filters{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+.filters select,.filters input{font-size:12px;padding:5px 10px;border:1px solid var(--border);border-radius:6px;background:var(--surface)}
+</style>
+</head>
+<body>
+<div class="top-bar">
+<div><h1>Cadorim <span>Dashboard</span></h1></div>
+<a href="setup.html">Setup</a>
+</div>
+<div class="tab-bar">
+<div class="tab active" onclick="sw(0)">CEO</div>
+<div class="tab" onclick="sw(1)">Treasury</div>
+<div class="tab" onclick="sw(2)">Operations</div>
+</div>
+
+<div id="p0" class="page active"></div>
+<div id="p1" class="page"></div>
+<div id="p2" class="page"></div>
+
+<script>
+const R=JSON.parse(localStorage.getItem('cadorim_results')||'null');
+if(!R){document.getElementById('p0').innerHTML='<div class="nodata"><h2>No engine data</h2><p>Open <a href="setup.html">setup.html</a>, click <b>Load Simulation</b>, then <b>Run Engine</b>.</p></div>';
+}else{buildAll(R);}
+
+function sw(i){document.querySelectorAll('.page').forEach((p,j)=>p.classList.toggle('active',j===i));
+document.querySelectorAll('.tab').forEach((t,j)=>t.classList.toggle('active',j===i));}
+
+function toggle(id){const el=document.getElementById(id);if(!el)return;
+document.querySelectorAll('.drill.open').forEach(d=>{if(d.id!==id)d.classList.remove('open')});
+el.classList.toggle('open');}
+
+const fmt=n=>Math.round(n||0).toLocaleString('fr-FR');
+const f2=n=>(n||0).toLocaleString('fr-FR',{minimumFractionDigits:2,maximumFractionDigits:2});
+const cls=n=>(n||0)>=0?'pos':'neg';
+const N=s=>typeof s==='string'?parseFloat(s):(s||0);
+
+function buildAll(R){
+const bal=R.balances;const eq=R.equation;const txs=R.txResults;const setts=R.settlements;const wds=R.withdrawals;const alerts=bal.alerts||[];
+const totalProfit=bal.profit_l1+bal.profit_l2;
+Chart.defaults.color='#6B6B6B';Chart.defaults.borderColor='#E0DCD4';Chart.defaults.font.family='-apple-system,sans-serif';
+
+// ══════════════════════════════════════════
+// TAB 0 — CEO
+// ══════════════════════════════════════════
+const intlTxs=txs.filter(t=>t.type==='international');
+const totalComm=txs.reduce((a,t)=>a+(t.commission_a||0),0);
+const totalCost=txs.reduce((a,t)=>a+(t.cost_payout_a||0),0);
+const totalFx=txs.reduce((a,t)=>a+(t.fx_gain_a||0),0);
+const totalL2=setts.reduce((a,s)=>a+(s.gain_sett_s||0),0);
+const totalRev=totalComm+totalFx+totalL2;
+const volume=txs.reduce((a,t)=>a+N(t.Amount_mru_h),0);
+const margin=volume>0?(totalProfit/volume*100):0;
+
+// Profit by partner
+const byPar={};txs.forEach(t=>{if(!byPar[t.Par_l])byPar[t.Par_l]={count:0,volume:0,profit:0,comm:0,fx:0,cost:0};
+const p=byPar[t.Par_l];p.count++;p.volume+=N(t.Amount_mru_h);p.profit+=t.profit_transaction_a||0;p.comm+=t.commission_a||0;p.fx+=t.fx_gain_a||0;p.cost+=t.cost_payout_a||0;});
+
+// Weekly profit trend
+const weekly={};txs.forEach(t=>{if(!t.date)return;const d=new Date(t.date);const wk=t.date.slice(0,7);
+if(!weekly[wk])weekly[wk]={profit:0,volume:0,count:0};weekly[wk].profit+=t.profit_transaction_a||0;weekly[wk].volume+=N(t.Amount_mru_h);weekly[wk].count++;});
+const wkKeys=Object.keys(weekly).sort();
+
+let ceo=`<div class="cards">
+<div class="card"><div class="lb">Total Profit</div><div class="vl vg">${fmt(totalProfit)}</div><div class="sb">L1: ${fmt(bal.profit_l1)} + L2: ${fmt(bal.profit_l2)}</div></div>
+<div class="card"><div class="lb">Margin</div><div class="vl ${margin>=0?'vg':'vr'}">${margin.toFixed(2)}%</div><div class="sb">Profit / Volume</div></div>
+<div class="card"><div class="lb">Revenue</div><div class="vl vb">${fmt(totalRev)}</div><div class="sb">Comm + FX</div></div>
+<div class="card"><div class="lb">Volume (MRU)</div><div class="vl">${fmt(volume)}</div><div class="sb">${txs.length} transactions</div></div>
+<div class="card"><div class="lb">Net Position</div><div class="vl vg">${fmt(eq.netPosition)}</div><div class="sb">Assets - Liabilities</div></div>
+</div>`;
+
+// Charts
+ceo+=`<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
+<div class="sec"><h3>Profit by Partner</h3><div class="cw"><canvas id="ceo-par"></canvas></div></div>
+<div class="sec"><h3>Revenue Breakdown</h3><div class="cw"><canvas id="ceo-rev"></canvas></div></div>
+</div>
+<div class="sec"><h3>Monthly Trend</h3><div class="cw"><canvas id="ceo-trend"></canvas></div></div>`;
+
+// Top transactions
+const topTxs=[...txs].sort((a,b)=>(b.profit_transaction_a||0)-(a.profit_transaction_a||0)).slice(0,8);
+ceo+=`<div class="sec"><h3>Top Transactions by Profit</h3><table><thead><tr><th>ID</th><th>Date</th><th>Partner</th><th>Channel</th><th class="n">Amount</th><th class="n">Profit</th></tr></thead><tbody>`;
+topTxs.forEach(t=>{ceo+=`<tr><td>${t.id}</td><td>${(t.date||'').slice(0,10)}</td><td>${t.Par_l}</td><td>${t.Local_Par_n}</td><td class="n">${fmt(t.Amount_mru_h)}</td><td class="n ${cls(t.profit_transaction_a)}">${f2(t.profit_transaction_a||0)}</td></tr>`;});
+ceo+=`</tbody></table></div>`;
+document.getElementById('p0').innerHTML=ceo;
+
+// CEO charts
+const parNames=Object.keys(byPar).sort((a,b)=>byPar[b].profit-byPar[a].profit);
+const PC=['#2563EB','#059669','#D97706','#7C3AED','#DC2626','#64748b'];
+new Chart(document.getElementById('ceo-par'),{type:'bar',data:{labels:parNames,datasets:[{data:parNames.map(p=>byPar[p].profit),backgroundColor:PC}]},options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{ticks:{callback:v=>fmt(v)}}}}});
+new Chart(document.getElementById('ceo-rev'),{type:'doughnut',data:{labels:['Commission','L1 FX Gain','L2 Settlement FX'],datasets:[{data:[totalComm,totalFx,totalL2],backgroundColor:['#2563EB','#059669','#7C3AED']}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{size:11}}}}}});
+new Chart(document.getElementById('ceo-trend'),{type:'line',data:{labels:wkKeys,datasets:[{label:'Profit',data:wkKeys.map(w=>weekly[w].profit),borderColor:'#059669',backgroundColor:'rgba(5,150,105,.1)',fill:true,tension:.3,pointRadius:3},{label:'Volume',data:wkKeys.map(w=>weekly[w].volume),borderColor:'#2563EB',yAxisID:'y1',tension:.3,pointRadius:3}]},options:{responsive:true,maintainAspectRatio:false,scales:{y:{ticks:{callback:v=>fmt(v)}},y1:{position:'right',grid:{display:false},ticks:{callback:v=>fmt(v)}}}}});
+
+// ══════════════════════════════════════════
+// TAB 1 — TREASURY
+// ══════════════════════════════════════════
+const recvEntries=Object.entries(bal.receivable);
+const recvSub=recvEntries.map(([k,v])=>f2(v.foreign)+' '+v.currency).join(', ')||'none';
+
+let tres=`<div class="eq"><strong>Assets:</strong> ${fmt(eq.assets)} &minus; <strong>Liabilities:</strong> ${fmt(eq.liabilities)} = <strong style="color:var(--green)">Net: ${fmt(eq.netPosition)} MRU</strong> <span style="color:var(--muted)">(Capital ${fmt(eq.working_capital)})</span></div>`;
+
+// Alerts
+if(alerts.length){tres+=`<div class="sec" style="border-left:3px solid var(--red)"><h3 style="color:var(--red)">Alerts (${alerts.length})</h3>`;
+alerts.forEach(a=>{tres+=`<div class="alert alert-${a.severity}">${a.type} [${a.date} ${a.id}] ${a.msg}</div>`;});
+tres+=`</div>`;}
+
+// Position cards
+tres+=`<div class="cards">
+<div class="card" onclick="toggle('d-cash')"><div class="lb"><span class="badge b-a">Asset</span> Cash</div><div class="vl">${fmt(eq.cashTotal)}</div><div class="sb">${Object.keys(bal.cash).length} caisses</div></div>
+<div class="card" onclick="toggle('d-wallet')"><div class="lb"><span class="badge b-a">Asset</span> Wallet Float</div><div class="vl vb">${fmt(eq.walletTotal)}</div><div class="sb">${Object.keys(bal.wallet).length} wallets</div></div>
+<div class="card" onclick="toggle('d-recv')"><div class="lb"><span class="badge b-a">Asset</span> Receivables</div><div class="vl vo">${fmt(eq.recvTotal)}</div><div class="sb">${recvSub}</div></div>
+<div class="card" onclick="toggle('d-bank')"><div class="lb"><span class="badge b-a">Asset</span> Bank</div><div class="vl vb">${fmt(eq.bankTotal)}</div></div>
+<div class="card" onclick="toggle('d-client')"><div class="lb"><span class="badge b-l">Liab</span> Client Float</div><div class="vl vr">${fmt(bal.client_float)}</div></div>
+<div class="card" onclick="toggle('d-agent')"><div class="lb"><span class="badge b-l">Liab</span> Agent</div><div class="vl vr">${fmt(bal.agent_balance)}</div></div>
+<div class="card" onclick="toggle('d-pnl')"><div class="lb"><span class="badge b-e">Equity</span> P&L</div><div class="vl vg">${fmt(totalProfit)}</div><div class="sb">L1+L2</div></div>
+</div>`;
+
+// Drill: Cash
+tres+=`<div id="d-cash" class="sec drill"><h3>Cash Positions</h3><table><thead><tr><th>Caisse</th><th class="n">Initial</th><th class="n">Balance</th><th class="n">Change</th><th>Status</th></tr></thead><tbody>`;
+for(const[k,v]of Object.entries(bal.cash)){const init=R.initial.cash[k]||0;const chg=v-init;
+const st=v<0?'<span class="neg">NEGATIVE</span>':v<init*0.1?'<span style="color:var(--yellow)">LOW</span>':'OK';
+tres+=`<tr><td>${k}</td><td class="n">${fmt(init)}</td><td class="n ${cls(v)}">${fmt(v)}</td><td class="n ${cls(chg)}">${chg>=0?'+':''}${fmt(chg)}</td><td>${st}</td></tr>`;}
+tres+=`</tbody></table></div>`;
+
+// Drill: Wallet (RED if negative)
+tres+=`<div id="d-wallet" class="sec drill"><h3>Wallet Float (Cadorim's prepaid balance)</h3><table><thead><tr><th>Wallet</th><th class="n">Initial</th><th class="n">Balance</th><th class="n">Change</th><th>Status</th></tr></thead><tbody>`;
+for(const[k,v]of Object.entries(bal.wallet)){const init=R.initial.wallet[k]||0;const chg=v-init;
+const st=v<0?'<span class="neg" style="font-weight:700">NEEDS TOP-UP</span>':'OK';
+tres+=`<tr${v<0?' style="background:var(--red-light)"':''}><td>${k}</td><td class="n">${fmt(init)}</td><td class="n ${cls(v)}">${fmt(v)}</td><td class="n ${cls(chg)}">${chg>=0?'+':''}${fmt(chg)}</td><td>${st}</td></tr>`;}
+tres+=`</tbody></table></div>`;
+
+// Drill: Receivables
+tres+=`<div id="d-recv" class="sec drill"><h3>Receivables &mdash; Dual Currency</h3><table><thead><tr><th>Partner</th><th class="n">Foreign Owed</th><th class="n">MRU Equiv</th><th>Currency</th></tr></thead><tbody>`;
+let trm=0;for(const[k,v]of Object.entries(bal.receivable)){tres+=`<tr><td>${k}</td><td class="n">${f2(v.foreign)}</td><td class="n">${fmt(v.mru)}</td><td>${v.currency}</td></tr>`;trm+=v.mru;}
+tres+=`<tr style="font-weight:700;border-top:2px solid var(--border)"><td>TOTAL</td><td></td><td class="n">${fmt(trm)}</td><td></td></tr></tbody></table>`;
+// Unsettled txns
+tres+=`<h3 style="font-size:13px;margin-top:14px">Unsettled Transactions</h3><table><thead><tr><th>Date</th><th>ID</th><th>Partner</th><th class="n">Foreign</th><th class="n">MRU</th></tr></thead><tbody>`;
+bal.events.filter(e=>e.type==='international').forEach(e=>{tres+=`<tr><td>${e.date}</td><td>${e.id}</td><td>${e.Par_l}</td><td class="n">${f2(e.Amount_j)} ${e.Cur_k}</td><td class="n">${fmt(e.Amount_mru_h)}</td></tr>`;});
+tres+=`</tbody></table></div>`;
+
+// Drill: Bank
+tres+=`<div id="d-bank" class="sec drill"><h3>Bank Balances</h3><table><thead><tr><th>Bank</th><th class="n">Initial</th><th class="n">Settlements In</th><th class="n">Withdrawals Out</th><th class="n">Balance</th></tr></thead><tbody>`;
+for(const[k,v]of Object.entries(bal.bank)){const init=R.initial.bank[k]||0;
+const sIn=bal.events.filter(e=>e.event==='settlement'&&e.Bank_t===k).reduce((a,e)=>a+(e.mru_received||0),0);
+const wOut=bal.events.filter(e=>e.event==='withdrawal'&&e.bank===k).reduce((a,e)=>a+N(e.amount),0);
+tres+=`<tr><td>${k}</td><td class="n">${fmt(init)}</td><td class="n pos">+${fmt(sIn)}</td><td class="n neg">-${fmt(wOut)}</td><td class="n ${cls(v)}">${fmt(v)}</td></tr>`;}
+tres+=`</tbody></table></div>`;
+
+// Drill: Client + Agent
+const deps=bal.events.filter(e=>e.type==='b2c_deposit').reduce((a,e)=>a+N(e.Amount_mru_h),0);
+const cpay=bal.events.filter(e=>e.type==='b2c_payout'||e.type==='wallet_cashout').reduce((a,e)=>a+N(e.Amount_mru_h),0);
+const aCash=bal.events.filter(e=>e.type==='agent_cashout').reduce((a,e)=>a+N(e.Amount_mru_h),0);
+const aRef=bal.events.filter(e=>e.type==='agent_refund').reduce((a,e)=>a+N(e.Amount_mru_h),0);
+tres+=`<div id="d-client" class="sec drill"><h3>Client Float & Agent</h3><table><thead><tr><th>Position</th><th class="n">In</th><th class="n">Out</th><th class="n">Net</th><th>Status</th></tr></thead><tbody>
+<tr><td>Client Float</td><td class="n pos">+${fmt(deps)}</td><td class="n neg">-${fmt(cpay)}</td><td class="n">${fmt(bal.client_float)}</td><td>${bal.client_float<0?'<span class="neg">NEGATIVE</span>':'OK'}</td></tr>
+<tr${bal.agent_balance>0?' style="background:var(--red-light)"':''}><td>Agent Balance</td><td class="n neg">-${fmt(aCash)} cashouts</td><td class="n pos">+${fmt(aRef)} refunds</td><td class="n ${cls(bal.agent_balance)}">${fmt(bal.agent_balance)}</td><td>${bal.agent_balance>0?'<span class="neg" style="font-weight:700">ERROR: POSITIVE</span>':'OK (we owe)'}</td></tr>
+</tbody></table></div>`;
+tres+=`<div id="d-agent" class="sec drill"></div>`;
+
+// Drill: P&L
+tres+=`<div id="d-pnl" class="sec drill"><h3>Profit & Loss</h3><table><thead><tr><th>Source</th><th class="n">Commission</th><th class="n">Cost</th><th class="n">FX Gain</th><th class="n">Net</th></tr></thead><tbody>
+<tr><td>Layer 1 (${txs.length} txns)</td><td class="n">${f2(totalComm)}</td><td class="n neg">${f2(totalCost)}</td><td class="n pos">${f2(totalFx)}</td><td class="n ${cls(bal.profit_l1)}">${f2(bal.profit_l1)}</td></tr>
+<tr><td>Layer 2 (${setts.length} settlements)</td><td></td><td></td><td class="n pos">${f2(totalL2)}</td><td class="n pos">${f2(bal.profit_l2)}</td></tr>
+<tr style="font-weight:700;border-top:2px solid var(--border)"><td>TOTAL</td><td class="n">${f2(totalComm)}</td><td class="n neg">${f2(totalCost)}</td><td class="n pos">${f2(totalFx+totalL2)}</td><td class="n ${cls(totalProfit)}">${f2(totalProfit)}</td></tr>
+</tbody></table></div>`;
+
+// Timeline
+tres+=`<div class="sec"><h3>Position Timeline</h3><div class="cw tall"><canvas id="tl-chart"></canvas></div></div>`;
+document.getElementById('p1').innerHTML=tres;
+
+// Timeline chart
+const dates=[...new Set(R.timeline.map(t=>t.date))];
+const byD={};dates.forEach(d=>{const last=R.timeline.filter(t=>t.date===d);byD[d]=last[last.length-1];});
+const da=Object.keys(byD).sort();
+new Chart(document.getElementById('tl-chart'),{type:'line',data:{labels:da,datasets:[
+{label:'Cash',data:da.map(d=>byD[d].cashTotal),borderColor:'#059669',fill:false,tension:.3,pointRadius:2},
+{label:'Wallet Float',data:da.map(d=>byD[d].walletTotal),borderColor:'#2563EB',fill:false,tension:.3,pointRadius:2},
+{label:'Receivables',data:da.map(d=>byD[d].recvTotal),borderColor:'#D97706',fill:false,tension:.3,pointRadius:2},
+{label:'Bank',data:da.map(d=>byD[d].bankTotal),borderColor:'#6366f1',fill:false,tension:.3,pointRadius:2},
+{label:'Client Float',data:da.map(d=>byD[d].client_float),borderColor:'#DC2626',borderDash:[5,3],fill:false,tension:.3,pointRadius:2},
+{label:'Agent',data:da.map(d=>byD[d].agent_balance),borderColor:'#64748b',borderDash:[5,3],fill:false,tension:.3,pointRadius:2},
+{label:'Net Position',data:da.map(d=>byD[d].netPosition),borderColor:'#7C3AED',borderWidth:3,fill:false,tension:.3,pointRadius:2},
+]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{usePointStyle:true,font:{size:11}}}},scales:{x:{ticks:{maxTicksLimit:12}},y:{ticks:{callback:v=>fmt(v)}}}}});
+
+// ══════════════════════════════════════════
+// TAB 2 — OPERATIONS
+// ══════════════════════════════════════════
+// Channel utilization
+const byChan={};txs.forEach(t=>{const c=(t.Local_Par_n||'none').replace('sim_','');if(!byChan[c])byChan[c]={count:0,volume:0,cost:0};byChan[c].count++;byChan[c].volume+=N(t.Amount_mru_h);byChan[c].cost+=t.cost_payout_a||0;});
+const chanKeys=Object.keys(byChan).sort((a,b)=>byChan[b].volume-byChan[a].volume);
+
+let ops=`<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
+<div class="sec"><h3>Channel Utilization (MRU)</h3><div class="cw"><canvas id="ops-chan"></canvas></div></div>
+<div class="sec"><h3>Daily Volume</h3><div class="cw"><canvas id="ops-daily"></canvas></div></div>
+</div>`;
+
+// Channel cost table
+ops+=`<div class="sec"><h3>Channel Cost Analysis</h3><table><thead><tr><th>Channel</th><th class="n">Txns</th><th class="n">Volume MRU</th><th class="n">Total Cost</th><th class="n">Avg Cost/Txn</th></tr></thead><tbody>`;
+chanKeys.forEach(c=>{const d=byChan[c];const avg=d.count>0?d.cost/d.count:0;
+ops+=`<tr><td>${c}</td><td class="n">${d.count}</td><td class="n">${fmt(d.volume)}</td><td class="n">${f2(d.cost)}</td><td class="n">${f2(avg)}</td></tr>`;});
+ops+=`</tbody></table></div>`;
+
+// Full transaction log
+ops+=`<div class="sec"><h3>Transaction Log (${txs.length} transactions)</h3>
+<div style="max-height:500px;overflow-y:auto"><table><thead><tr><th>ID</th><th>Date</th><th>Type</th><th>Partner</th><th>Channel</th><th class="n">Amount</th><th class="n">Comm</th><th class="n">Cost</th><th class="n">FX</th><th class="n">Profit</th></tr></thead><tbody>`;
+[...txs].sort((a,b)=>(a.date||'').localeCompare(b.date||'')).forEach(t=>{
+ops+=`<tr><td>${t.id}</td><td>${(t.date||'').slice(0,10)}</td><td>${t.type}</td><td>${t.Par_l}</td><td>${(t.Local_Par_n||'').replace('sim_','')}</td><td class="n">${fmt(t.Amount_mru_h)}</td><td class="n">${f2(t.commission_a||0)}</td><td class="n">${f2(t.cost_payout_a||0)}</td><td class="n">${f2(t.fx_gain_a||0)}</td><td class="n ${cls(t.profit_transaction_a)}">${f2(t.profit_transaction_a||0)}</td></tr>`;});
+ops+=`</tbody></table></div></div>`;
+document.getElementById('p2').innerHTML=ops;
+
+// Ops charts
+new Chart(document.getElementById('ops-chan'),{type:'bar',data:{labels:chanKeys,datasets:[{data:chanKeys.map(c=>byChan[c].volume),backgroundColor:PC}]},options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{ticks:{callback:v=>fmt(v)}}}}});
+
+const daily={};txs.forEach(t=>{if(!t.date)return;const d=t.date.slice(0,10);if(!daily[d])daily[d]={count:0,vol:0};daily[d].count++;daily[d].vol+=N(t.Amount_mru_h);});
+const dKeys=Object.keys(daily).sort();
+new Chart(document.getElementById('ops-daily'),{type:'bar',data:{labels:dKeys,datasets:[{label:'Volume',data:dKeys.map(d=>daily[d].vol),backgroundColor:'#2563EB'},{label:'Count',data:dKeys.map(d=>daily[d].count),type:'line',borderColor:'#D97706',yAxisID:'y1',tension:.3,pointRadius:2}]},options:{responsive:true,maintainAspectRatio:false,scales:{x:{ticks:{maxTicksLimit:15}},y:{ticks:{callback:v=>fmt(v)}},y1:{position:'right',grid:{display:false}}}}});
+}
+</script>
+</body>
+</html>

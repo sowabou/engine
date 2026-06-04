@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cadorim — Parameter Setup</title>
+<style>
+:root {
+  --bg:#F7F5F0;--surface:#FFFFFF;--surface-alt:#F0EDE6;--text:#2D2D2D;--text-secondary:#6B6B6B;
+  --border:#E0DCD4;--accent:#D97706;--blue:#2563EB;--blue-light:#EFF6FF;--green:#059669;
+  --green-light:#ECFDF5;--red:#DC2626;--red-light:#FEF2F2;--purple:#7C3AED;--purple-light:#F5F3FF;
+  --shadow-sm:0 1px 2px rgba(0,0,0,0.06);--radius:8px;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--text);line-height:1.5;padding:24px 32px;max-width:1280px;margin:0 auto}
+header{margin-bottom:32px}
+header h1{font-size:22px;font-weight:600;letter-spacing:-0.3px} header h1 span{color:var(--accent)}
+header p{font-size:14px;color:var(--text-secondary);margin-top:4px}
+.section{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px 24px;margin-bottom:24px;box-shadow:var(--shadow-sm)}
+.section.l2{border-left:3px solid var(--purple)}
+.section-header{display:flex;align-items:center;gap:10px;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid var(--border)}
+.section-header h2{font-size:15px;font-weight:600}
+.badge{display:inline-block;font-size:11px;font-weight:600;padding:2px 8px;border-radius:10px;text-transform:uppercase;letter-spacing:0.5px}
+.badge-blue{background:var(--blue-light);color:var(--blue)} .badge-purple{background:var(--purple-light);color:var(--purple)}
+.badge-green{background:var(--green-light);color:var(--green)} .badge-red{background:var(--red-light);color:var(--red)}
+table{width:100%;border-collapse:collapse;font-size:13px}
+thead th{text-align:left;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-secondary);padding:8px 10px;background:var(--surface-alt);border-bottom:2px solid var(--border)}
+tbody td{padding:6px 10px;border-bottom:1px solid var(--border);vertical-align:middle}
+tbody tr:hover{background:var(--surface-alt)}
+input,select{font-family:inherit;font-size:13px;padding:6px 10px;border:1px solid var(--border);border-radius:6px;background:var(--surface);color:var(--text);outline:none}
+input:focus,select:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(37,99,235,0.1)}
+input[type="text"],input[type="number"]{width:100%} select{width:100%}
+input[type="checkbox"]{width:16px;height:16px;accent-color:var(--blue);cursor:pointer}
+.btn{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:500;padding:8px 16px;border:none;border-radius:6px;cursor:pointer;transition:all 0.15s}
+.btn-blue{background:var(--blue);color:#fff} .btn-blue:hover{background:#1D4ED8}
+.btn-green{background:var(--green);color:#fff} .btn-green:hover{background:#047857}
+.btn-outline{background:var(--surface);color:var(--text);border:1px solid var(--border)} .btn-outline:hover{background:var(--surface-alt)}
+.btn-add{background:none;border:none;color:var(--blue);font-size:13px;font-weight:500;cursor:pointer;padding:6px 0} .btn-add:hover{text-decoration:underline}
+.btn-remove{background:none;border:none;color:var(--red);cursor:pointer;font-size:16px;padding:4px 8px;border-radius:4px} .btn-remove:hover{background:var(--red-light)}
+.actions{display:flex;gap:10px;margin:24px 0;flex-wrap:wrap}
+#results{margin-top:24px}
+.r-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px 20px;margin-bottom:16px;box-shadow:var(--shadow-sm)}
+.r-card h3{font-size:14px;font-weight:600;cursor:pointer} .r-card h3:hover{color:var(--blue)}
+.r-card.l2{border-left:3px solid var(--purple)}
+.kpi-row{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:12px}
+.kpi{background:var(--surface-alt);border:1px solid var(--border);border-radius:var(--radius);padding:12px 16px;min-width:140px}
+.kpi .l{font-size:10px;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.5px}
+.kpi .v{font-size:20px;font-weight:700;margin-top:3px;font-variant-numeric:tabular-nums}
+.v.g{color:var(--green)} .v.r{color:var(--red)} .v.c{color:var(--blue)} .v.p{color:var(--purple)} .v.o{color:var(--accent)}
+.drill{display:none;margin-top:10px} .drill.open{display:block}
+.pos{color:var(--green)} .neg{color:var(--red)}
+.n{text-align:right;font-variant-numeric:tabular-nums}
+.eq-bar{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px 20px;margin-bottom:20px;font-size:13px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;box-shadow:var(--shadow-sm)}
+.eq-bar .eq-ok{color:var(--green);font-weight:700} .eq-bar .eq-fail{color:var(--red);font-weight:700}
+#toast{position:fixed;bottom:20px;right:20px;background:var(--green);color:#fff;padding:10px 20px;border-radius:8px;font-weight:600;display:none;z-index:999}
+</style>
+</head>
+<body>
+<header>
+  <h1>Cadorim <span>Parameter Setup</span></h1>
+  <p>Define Layer 1 + Layer 2 parameters. Run engine to compute profit AND treasury balances.</p>
+</header>
+
+<!-- Partner Config -->
+<div class="section">
+  <div class="section-header"><span class="badge badge-blue">Layer 1</span><h2>Partner Configuration</h2></div>
+  <table><thead><tr><th>Code</th><th>Name</th><th>Intl?</th><th>Currency</th><th>Comm Type</th><th>Rate</th><th>Fixed</th><th>FX Partner</th><th>FX Cadorim</th><th>FX Market</th><th></th></tr></thead><tbody id="partners-body"></tbody></table>
+  <button class="btn-add" onclick="addPartner()">+ Add partner</button>
+</div>
+
+<!-- Channels -->
+<div class="section">
+  <div class="section-header"><span class="badge badge-blue">Layer 1</span><h2>Payout Channels</h2></div>
+  <table><thead><tr><th>Partner</th><th>Channel Code</th><th>Cost</th><th>Cost Type</th><th></th></tr></thead><tbody id="channels-body"></tbody></table>
+  <button class="btn-add" onclick="addChannel()">+ Add channel</button>
+</div>
+
+<!-- Settlements -->
+<div class="section l2">
+  <div class="section-header"><span class="badge badge-purple">Layer 2</span><h2>Settlement Configuration (independent)</h2></div>
+  <table><thead><tr><th>Partner</th><th>Bank</th><th>Currency</th><th>FX Settlement</th><th>FX Reference</th><th></th></tr></thead><tbody id="settlements-body"></tbody></table>
+  <button class="btn-add" onclick="addSettlement()">+ Add settlement</button>
+</div>
+
+<div class="actions">
+  <button class="btn btn-blue" onclick="runEngine()">Run Engine</button>
+  <button class="btn btn-green" onclick="saveResults()">Save Results</button>
+  <button class="btn btn-outline" onclick="loadConfig()">Load Config</button>
+  <button class="btn btn-outline" onclick="loadSimulation()">Load Simulation (50 txns)</button>
+  <input type="file" id="file-input" accept=".json" style="display:none" onchange="handleFileLoad(event)">
+</div>
+<div id="results"></div>
+<div id="toast"></div>
+
+<script>
+// ══════════════════════════════════════════════════════════════
+// STATE
+// ══════════════════════════════════════════════════════════════
+let partners=[],channels=[],settlements=[];
+
+// ══════════════════════════════════════════════════════════════
+// SIMULATION DATA — 50 txns, 6 settlements, 3 withdrawals
+// ══════════════════════════════════════════════════════════════
+const SIM_CONFIG={
+"layer1":[
+  {"code":"sim_terrapay","name":"TerraPay (sim)","is_international":true,"currency":"USD","commission_type":"percentage","commission_rate":"0.005","commission_fixed":"0","fx_partner_rate":"39.0","fx_cadorim_rate":"39.5","fx_market_rate":"39.2","channels":[{"code":"sim_sedad","cost_payout":"50","cost_type":"fixed"},{"code":"sim_click","cost_payout":"30","cost_type":"fixed"}]},
+  {"code":"sim_ria","name":"Ria (sim)","is_international":true,"currency":"EUR","commission_type":"percentage","commission_rate":"0.01","commission_fixed":"0","fx_partner_rate":"42.0","fx_cadorim_rate":"42.8","fx_market_rate":"42.5","channels":[{"code":"sim_agent_caisse","cost_payout":"30","cost_type":"per_transaction"}]},
+  {"code":"sim_wallet","name":"Cadorim Wallet (sim)","is_international":false,"currency":"MRU","commission_type":"fixed","commission_rate":"0","commission_fixed":"0","fx_partner_rate":"0","fx_cadorim_rate":"0","fx_market_rate":"0","channels":[{"code":"sim_internal","cost_payout":"0","cost_type":"fixed"},{"code":"sim_sedad","cost_payout":"50","cost_type":"fixed"}]},
+  {"code":"sim_sndp","name":"SNDP (sim B2C)","is_international":false,"currency":"MRU","commission_type":"percentage","commission_rate":"0.002","commission_fixed":"0","fx_partner_rate":"0","fx_cadorim_rate":"0","fx_market_rate":"0","channels":[{"code":"sim_sedad","cost_payout":"50","cost_type":"fixed"},{"code":"sim_agent_caisse","cost_payout":"30","cost_type":"per_transaction"}]},
+  {"code":"sim_agent","name":"Agent Ops (sim)","is_international":false,"currency":"MRU","commission_type":"fixed","commission_rate":"0","commission_fixed":"0","fx_partner_rate":"0","fx_cadorim_rate":"0","fx_market_rate":"0","channels":[{"code":"sim_agent_caisse","cost_payout":"30","cost_type":"per_transaction"}]}
+],
+"layer2":[
+  {"partner_code":"sim_terrapay","bank_code":"sim_bmi","currency":"USD","fx_settlement_rate":"39.3","fx_reference_rate":"39.0"},
+  {"partner_code":"sim_ria","bank_code":"sim_bmi","currency":"EUR","fx_settlement_rate":"42.6","fx_reference_rate":"42.0"}
+]};
+
+const SIM_INITIAL={
+  cash:{"caisse_mboirick":200000,"caisse_tidjany":150000,"caisse_babe":100000},
+  wallet:{"sedad":150000,"masrvi":80000,"bankily":50000,"click":70000},
+  bank:{"sim_bmi":200000},
+  client_float:50000,  // Existing wallet client balances (liability)
+  working_capital:950000  // 1M total assets - 50k client float = 950k equity
+};
+
+const SIM_TXS=[
+{"id":"T001","date":"2026-01-01","Par_l":"sim_terrapay","Cur_k":"USD","Amount_j":500,"Amount_mru_h":19500,"Local_Par_n":"sim_sedad","type":"international"},
+{"id":"T002","date":"2026-01-01","Par_l":"sim_terrapay","Cur_k":"USD","Amount_j":800,"Amount_mru_h":31200,"Local_Par_n":"sim_click","type":"international"},
+{"id":"T003","date":"2026-01-02","Par_l":"sim_terrapay","Cur_k":"USD","Amount_j":1200,"Amount_mru_h":46800,"Local_Par_n":"sim_sedad","type":"international"},
+{"id":"T004","date":"2026-01-02","Par_l":"sim_ria","Cur_k":"EUR","Amount_j":300,"Amount_mru_h":12840,"Local_Par_n":"sim_agent_caisse","type":"international"},
+{"id":"T005","date":"2026-01-03","Par_l":"sim_ria","Cur_k":"EUR","Amount_j":600,"Amount_mru_h":25680,"Local_Par_n":"sim_agent_caisse","type":"international"},
+{"id":"T006","date":"2026-01-03","Par_l":"sim_wallet","Cur_k":"MRU","Amount_j":5000,"Amount_mru_h":5000,"Local_Par_n":"sim_internal","type":"wallet_p2p"},
+{"id":"T007","date":"2026-01-04","Par_l":"sim_wallet","Cur_k":"MRU","Amount_j":8000,"Amount_mru_h":8000,"Local_Par_n":"sim_sedad","type":"wallet_cashout"},
+{"id":"T008","date":"2026-01-05","Par_l":"sim_sndp","Cur_k":"MRU","Amount_j":50000,"Amount_mru_h":50000,"Local_Par_n":"sim_internal","caisse":"caisse_babe","type":"b2c_deposit"},
+{"id":"T009","date":"2026-01-06","Par_l":"sim_sndp","Cur_k":"MRU","Amount_j":12000,"Amount_mru_h":12000,"Local_Par_n":"sim_sedad","type":"b2c_payout"},
+{"id":"T010","date":"2026-01-06","Par_l":"sim_sndp","Cur_k":"MRU","Amount_j":8000,"Amount_mru_h":8000,"Local_Par_n":"sim_agent_caisse","type":"b2c_payout"},
+{"id":"T011","date":"2026-01-07","Par_l":"sim_sndp","Cur_k":"MRU","Amount_j":15000,"Amount_mru_h":15000,"Local_Par_n":"sim_sedad","type":"b2c_payout"},
+{"id":"T012","date":"2026-01-08","Par_l":"sim_terrapay","Cur_k":"USD","Amount_j":2000,"Amount_mru_h":78000,"Local_Par_n":"sim_sedad","type":"international"},
+{"id":"T013","date":"2026-01-09","Par_l":"sim_terrapay","Cur_k":"USD","Amount_j":350,"Amount_mru_h":13650,"Local_Par_n":"sim_click","type":"international"},
+{"id":"T014","date":"2026-01-10","Par_l":"sim_ria","Cur_k":"EUR","Amount_j":450,"Amount_mru_h":19260,"Local_Par_n":"sim_agent_caisse","type":"international"},
+{"id":"T015","date":"2026-01-11","Par_l":"sim_ria","Cur_k":"EUR","Amount_j":700,"Amount_mru_h":29960,"Local_Par_n":"sim_agent_caisse","type":"international"},
+{"id":"T016","date":"2026-01-12","Par_l":"sim_agent","Cur_k":"MRU","Amount_j":10000,"Amount_mru_h":10000,"Local_Par_n":"sim_agent_caisse","type":"agent_cashout"},
+{"id":"T017","date":"2026-01-13","Par_l":"sim_agent","Cur_k":"MRU","Amount_j":15000,"Amount_mru_h":15000,"Local_Par_n":"sim_agent_caisse","type":"agent_cashout"},
+{"id":"T018","date":"2026-01-14","Par_l":"sim_wallet","Cur_k":"MRU","Amount_j":3000,"Amount_mru_h":3000,"Local_Par_n":"sim_internal","type":"wallet_p2p"},
+{"id":"T019","date":"2026-01-15","Par_l":"sim_wallet","Cur_k":"MRU","Amount_j":12000,"Amount_mru_h":12000,"Local_Par_n":"sim_sedad","type":"wallet_cashout"},
+{"id":"T020","date":"2026-01-16","Par_l":"sim_terrapay","Cur_k":"USD","Amount_j":900,"Amount_mru_h":35100,"Local_Par_n":"sim_sedad","type":"international"},
+{"id":"T021","date":"2026-01-17","Par_l":"sim_ria","Cur_k":"EUR","Amount_j":500,"Amount_mru_h":21400,"Local_Par_n":"sim_agent_caisse","type":"international"},
+{"id":"T022","date":"2026-01-22","Par_l":"sim_terrapay","Cur_k":"USD","Amount_j":1500,"Amount_mru_h":58500,"Local_Par_n":"sim_click","type":"international"},
+{"id":"T023","date":"2026-01-23","Par_l":"sim_terrapay","Cur_k":"USD","Amount_j":750,"Amount_mru_h":29250,"Local_Par_n":"sim_sedad","type":"international"},
+{"id":"T024","date":"2026-01-25","Par_l":"sim_sndp","Cur_k":"MRU","Amount_j":40000,"Amount_mru_h":40000,"Local_Par_n":"sim_internal","caisse":"caisse_babe","type":"b2c_deposit"},
+{"id":"T025","date":"2026-01-26","Par_l":"sim_sndp","Cur_k":"MRU","Amount_j":10000,"Amount_mru_h":10000,"Local_Par_n":"sim_sedad","type":"b2c_payout"},
+{"id":"T026","date":"2026-01-27","Par_l":"sim_sndp","Cur_k":"MRU","Amount_j":20000,"Amount_mru_h":20000,"Local_Par_n":"sim_agent_caisse","type":"b2c_payout"},
+{"id":"T027","date":"2026-01-28","Par_l":"sim_agent","Cur_k":"MRU","Amount_j":20000,"Amount_mru_h":20000,"Local_Par_n":"sim_agent_caisse","caisse":"caisse_mboirick","type":"agent_refund"},
+{"id":"T028","date":"2026-02-01","Par_l":"sim_terrapay","Cur_k":"USD","Amount_j":1800,"Amount_mru_h":70200,"Local_Par_n":"sim_sedad","type":"international"},
+{"id":"T029","date":"2026-02-03","Par_l":"sim_ria","Cur_k":"EUR","Amount_j":800,"Amount_mru_h":34240,"Local_Par_n":"sim_agent_caisse","type":"international"},
+{"id":"T030","date":"2026-02-05","Par_l":"sim_terrapay","Cur_k":"USD","Amount_j":600,"Amount_mru_h":23400,"Local_Par_n":"sim_click","type":"international"},
+{"id":"T031","date":"2026-02-07","Par_l":"sim_wallet","Cur_k":"MRU","Amount_j":7000,"Amount_mru_h":7000,"Local_Par_n":"sim_internal","type":"wallet_p2p"},
+{"id":"T032","date":"2026-02-08","Par_l":"sim_wallet","Cur_k":"MRU","Amount_j":6000,"Amount_mru_h":6000,"Local_Par_n":"sim_sedad","type":"wallet_cashout"},
+{"id":"T033","date":"2026-02-10","Par_l":"sim_ria","Cur_k":"EUR","Amount_j":550,"Amount_mru_h":23540,"Local_Par_n":"sim_agent_caisse","type":"international"},
+{"id":"T034","date":"2026-02-12","Par_l":"sim_terrapay","Cur_k":"USD","Amount_j":400,"Amount_mru_h":15600,"Local_Par_n":"sim_sedad","type":"international"},
+{"id":"T035","date":"2026-02-14","Par_l":"sim_agent","Cur_k":"MRU","Amount_j":8000,"Amount_mru_h":8000,"Local_Par_n":"sim_agent_caisse","type":"agent_cashout"},
+{"id":"T036","date":"2026-02-15","Par_l":"sim_agent","Cur_k":"MRU","Amount_j":12000,"Amount_mru_h":12000,"Local_Par_n":"sim_agent_caisse","caisse":"caisse_tidjany","type":"agent_refund"},
+{"id":"T037","date":"2026-03-01","Par_l":"sim_terrapay","Cur_k":"USD","Amount_j":2500,"Amount_mru_h":97500,"Local_Par_n":"sim_sedad","type":"international"},
+{"id":"T038","date":"2026-03-03","Par_l":"sim_ria","Cur_k":"EUR","Amount_j":900,"Amount_mru_h":38520,"Local_Par_n":"sim_agent_caisse","type":"international"},
+{"id":"T039","date":"2026-03-05","Par_l":"sim_terrapay","Cur_k":"USD","Amount_j":1100,"Amount_mru_h":42900,"Local_Par_n":"sim_click","type":"international"},
+{"id":"T040","date":"2026-03-06","Par_l":"sim_sndp","Cur_k":"MRU","Amount_j":60000,"Amount_mru_h":60000,"Local_Par_n":"sim_internal","caisse":"caisse_babe","type":"b2c_deposit"},
+{"id":"T041","date":"2026-03-07","Par_l":"sim_sndp","Cur_k":"MRU","Amount_j":18000,"Amount_mru_h":18000,"Local_Par_n":"sim_sedad","type":"b2c_payout"},
+{"id":"T042","date":"2026-03-08","Par_l":"sim_sndp","Cur_k":"MRU","Amount_j":22000,"Amount_mru_h":22000,"Local_Par_n":"sim_agent_caisse","type":"b2c_payout"},
+{"id":"T043","date":"2026-03-09","Par_l":"sim_sndp","Cur_k":"MRU","Amount_j":10000,"Amount_mru_h":10000,"Local_Par_n":"sim_sedad","type":"b2c_payout"},
+{"id":"T044","date":"2026-03-10","Par_l":"sim_wallet","Cur_k":"MRU","Amount_j":4000,"Amount_mru_h":4000,"Local_Par_n":"sim_internal","type":"wallet_p2p"},
+{"id":"T045","date":"2026-03-12","Par_l":"sim_wallet","Cur_k":"MRU","Amount_j":9000,"Amount_mru_h":9000,"Local_Par_n":"sim_sedad","type":"wallet_cashout"},
+{"id":"T046","date":"2026-03-15","Par_l":"sim_terrapay","Cur_k":"USD","Amount_j":3000,"Amount_mru_h":117000,"Local_Par_n":"sim_sedad","type":"international"},
+{"id":"T047","date":"2026-03-18","Par_l":"sim_ria","Cur_k":"EUR","Amount_j":1000,"Amount_mru_h":42800,"Local_Par_n":"sim_agent_caisse","type":"international"},
+{"id":"T048","date":"2026-03-20","Par_l":"sim_terrapay","Cur_k":"USD","Amount_j":650,"Amount_mru_h":25350,"Local_Par_n":"sim_click","type":"international"},
+{"id":"T049","date":"2026-03-22","Par_l":"sim_agent","Cur_k":"MRU","Amount_j":5000,"Amount_mru_h":5000,"Local_Par_n":"sim_agent_caisse","type":"agent_cashout"},
+{"id":"T050","date":"2026-03-25","Par_l":"sim_agent","Cur_k":"MRU","Amount_j":18000,"Amount_mru_h":18000,"Local_Par_n":"sim_agent_caisse","caisse":"caisse_mboirick","type":"agent_refund"}
+];
+
+const SIM_SETT=[
+{"id":"S001","date_s":"2026-01-20","Par_l":"sim_terrapay","Bank_t":"sim_bmi","Amount_s":4850,"Cur_k":"USD","fx_settlement_rate":39.3,"fx_reference_rate":39.0},
+{"id":"S002","date_s":"2026-01-28","Par_l":"sim_ria","Bank_t":"sim_bmi","Amount_s":2550,"Cur_k":"EUR","fx_settlement_rate":42.6,"fx_reference_rate":42.0},
+{"id":"S003","date_s":"2026-02-05","Par_l":"sim_terrapay","Bank_t":"sim_bmi","Amount_s":3150,"Cur_k":"USD","fx_settlement_rate":39.4,"fx_reference_rate":39.0},
+{"id":"S004","date_s":"2026-02-25","Par_l":"sim_terrapay","Bank_t":"sim_bmi","Amount_s":2800,"Cur_k":"USD","fx_settlement_rate":39.5,"fx_reference_rate":39.0},
+{"id":"S005","date_s":"2026-03-01","Par_l":"sim_ria","Bank_t":"sim_bmi","Amount_s":1350,"Cur_k":"EUR","fx_settlement_rate":42.7,"fx_reference_rate":42.0},
+{"id":"S006","date_s":"2026-03-20","Par_l":"sim_terrapay","Bank_t":"sim_bmi","Amount_s":3600,"Cur_k":"USD","fx_settlement_rate":39.6,"fx_reference_rate":39.0}
+];
+
+const SIM_WITHDRAWALS=[
+{"id":"W001","date":"2026-01-25","bank":"sim_bmi","caisse":"caisse_babe","amount":80000},
+{"id":"W002","date":"2026-02-15","bank":"sim_bmi","caisse":"caisse_mboirick","amount":100000},
+{"id":"W003","date":"2026-03-10","bank":"sim_bmi","caisse":"caisse_tidjany","amount":60000}
+];
+
+// ══════════════════════════════════════════════════════════════
+// RENDER TABLES (partner/channel/settlement config)
+// ══════════════════════════════════════════════════════════════
+function renderPartners(){const t=document.getElementById('partners-body');t.innerHTML='';partners.forEach((p,i)=>{const intl=p.is_international;t.innerHTML+=`<tr><td><input type="text" value="${p.code}" onchange="partners[${i}].code=this.value"></td><td><input type="text" value="${p.name}" onchange="partners[${i}].name=this.value"></td><td><input type="checkbox" ${intl?'checked':''} onchange="partners[${i}].is_international=this.checked;renderPartners()"></td><td><select onchange="partners[${i}].currency=this.value">${['USD','EUR','USDC','MRU'].map(c=>`<option ${c===p.currency?'selected':''}>${c}</option>`).join('')}</select></td><td><select onchange="partners[${i}].commission_type=this.value">${['percentage','fixed'].map(t=>`<option ${t===p.commission_type?'selected':''}>${t}</option>`).join('')}</select></td><td><input type="number" step="0.001" value="${p.commission_rate}" onchange="partners[${i}].commission_rate=this.value" ${p.commission_type==='fixed'?'disabled':''}></td><td><input type="number" step="1" value="${p.commission_fixed}" onchange="partners[${i}].commission_fixed=this.value" ${p.commission_type==='percentage'?'disabled':''}></td><td><input type="number" step="0.1" value="${p.fx_partner_rate}" onchange="partners[${i}].fx_partner_rate=this.value" ${!intl?'disabled':''}></td><td><input type="number" step="0.1" value="${p.fx_cadorim_rate}" onchange="partners[${i}].fx_cadorim_rate=this.value" ${!intl?'disabled':''}></td><td><input type="number" step="0.1" value="${p.fx_market_rate}" onchange="partners[${i}].fx_market_rate=this.value" ${!intl?'disabled':''}></td><td><button class="btn-remove" onclick="partners.splice(${i},1);renderPartners()">&times;</button></td></tr>`});}
+function renderChannels(){const t=document.getElementById('channels-body');t.innerHTML='';channels.forEach((c,i)=>{t.innerHTML+=`<tr><td><select onchange="channels[${i}].partner=this.value">${partners.map(p=>`<option ${p.code===c.partner?'selected':''}>${p.code}</option>`).join('')}</select></td><td><input type="text" value="${c.code}" onchange="channels[${i}].code=this.value"></td><td><input type="number" step="1" value="${c.cost_payout}" onchange="channels[${i}].cost_payout=this.value"></td><td><select onchange="channels[${i}].cost_type=this.value">${['fixed','percentage','per_transaction'].map(t=>`<option ${t===c.cost_type?'selected':''}>${t}</option>`).join('')}</select></td><td><button class="btn-remove" onclick="channels.splice(${i},1);renderChannels()">&times;</button></td></tr>`});}
+function renderSettlements(){const t=document.getElementById('settlements-body');t.innerHTML='';settlements.forEach((s,i)=>{t.innerHTML+=`<tr><td><input type="text" value="${s.partner_code}" onchange="settlements[${i}].partner_code=this.value"></td><td><input type="text" value="${s.bank_code}" onchange="settlements[${i}].bank_code=this.value"></td><td><select onchange="settlements[${i}].currency=this.value">${['USD','EUR','USDC'].map(c=>`<option ${c===s.currency?'selected':''}>${c}</option>`).join('')}</select></td><td><input type="number" step="0.1" value="${s.fx_settlement_rate}" onchange="settlements[${i}].fx_settlement_rate=this.value"></td><td><input type="number" step="0.1" value="${s.fx_reference_rate}" onchange="settlements[${i}].fx_reference_rate=this.value"></td><td><button class="btn-remove" onclick="settlements.splice(${i},1);renderSettlements()">&times;</button></td></tr>`});}
+function addPartner(){partners.push({code:'',name:'',is_international:false,currency:'MRU',commission_type:'percentage',commission_rate:'0',commission_fixed:'0',fx_partner_rate:'0',fx_cadorim_rate:'0',fx_market_rate:'0'});renderPartners();}
+function addChannel(){channels.push({partner:partners[0]?.code||'',code:'',cost_payout:'0',cost_type:'fixed'});renderChannels();}
+function addSettlement(){settlements.push({partner_code:'',bank_code:'',currency:'USD',fx_settlement_rate:'0',fx_reference_rate:'0'});renderSettlements();}
+function renderAll(){renderPartners();renderChannels();renderSettlements();}
+
+// Config load/save
+function buildConfigJSON(){return{layer1:partners.map(p=>({...p,channels:channels.filter(c=>c.partner===p.code).map(c=>({code:c.code,cost_payout:c.cost_payout,cost_type:c.cost_type}))})),layer2:settlements};}
+function loadFromDict(d){partners=[];channels=[];settlements=[];(d.layer1||[]).forEach(p=>{partners.push({code:p.code,name:p.name||'',is_international:!!p.is_international,currency:p.currency||'MRU',commission_type:p.commission_type||'percentage',commission_rate:p.commission_rate||'0',commission_fixed:p.commission_fixed||'0',fx_partner_rate:p.fx_partner_rate||'0',fx_cadorim_rate:p.fx_cadorim_rate||'0',fx_market_rate:p.fx_market_rate||'0'});(p.channels||[]).forEach(c=>channels.push({partner:p.code,code:c.code,cost_payout:c.cost_payout||'0',cost_type:c.cost_type||'fixed'}))});(d.layer2||[]).forEach(s=>settlements.push({...s}));renderAll();}
+function loadConfig(){document.getElementById('file-input').click();}
+function handleFileLoad(e){const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=ev=>{try{loadFromDict(JSON.parse(ev.target.result));toast('Config loaded')}catch(err){alert('Invalid JSON: '+err)}};r.readAsText(f);}
+function loadSimulation(){loadFromDict(SIM_CONFIG);toast('Simulation loaded — 5 partners, 50 txns, 6 settlements, 3 withdrawals');}
+
+// ══════════════════════════════════════════════════════════════
+// PROFIT ENGINE (Layer 1 + Layer 2)
+// ══════════════════════════════════════════════════════════════
+const N=s=>typeof s==='string'?parseFloat(s):s;
+function computeL1(tx,cfg){
+const p=cfg.layer1.find(x=>x.code===tx.Par_l);if(!p)return{commission_a:0,cost_payout_a:0,fx_gain_a:0,gain_transaction_a:0,profit_transaction_a:0};
+const amt=N(tx.Amount_j),mru=N(tx.Amount_mru_h);
+let comm=p.commission_type==='percentage'?Math.round(amt*N(p.commission_rate)*100)/100:N(p.commission_fixed);
+const ch=(p.channels||[]).find(c=>c.code===tx.Local_Par_n);
+let cost=ch?(ch.cost_type==='percentage'?Math.round(mru*N(ch.cost_payout)*100)/100:N(ch.cost_payout)):0;
+const fxp=N(p.fx_partner_rate),fxc=N(p.fx_cadorim_rate);
+let fx=(fxc>0&&fxp>0)?Math.round((fxc-fxp)*amt*100)/100:0;
+return{commission_a:comm,cost_payout_a:cost,fx_gain_a:fx,gain_transaction_a:Math.round((comm-cost)*100)/100,profit_transaction_a:Math.round((comm-cost+fx)*100)/100};}
+function computeL2(s){return{gain_sett_s:Math.round((N(s.fx_settlement_rate)-N(s.fx_reference_rate))*N(s.Amount_s)*100)/100};}
+
+// ══════════════════════════════════════════════════════════════
+// BALANCE ENGINE — tracks WHERE every MRU sits
+// ══════════════════════════════════════════════════════════════
+function getPayoutPool(ch){
+if(!ch)return{type:'internal',key:null};
+const c=ch.replace('sim_','');
+if(c.startsWith('caisse_'))return{type:'cash',key:c};
+if(['sedad','click','masrvi','bankily'].includes(c))return{type:'wallet',key:c};
+if(c.includes('agent'))return{type:'agent',key:'agent_pool'};
+return{type:'internal',key:null};}
+
+function initBalances(initial){
+return{
+  cash:{...initial.cash},
+  wallet:{...initial.wallet},
+  bank:{...initial.bank},
+  receivable:{},
+  client_float:initial.client_float||0,
+  agent_balance:0,
+  working_capital:initial.working_capital,
+  profit_l1:0,
+  profit_l2:0,
+  events:[],
+  alerts:[]  // Business rule violations
+};}
+
+function applyTx(tx,profit,bal){
+const pool=getPayoutPool(tx.Local_Par_n);
+const mru=N(tx.Amount_mru_h);
+const ev={...tx,...profit,pool_type:pool.type,pool_key:pool.key,event:'transaction'};
+
+if(tx.type==='international'){
+  // Payout MRU to beneficiary via channel
+  if(pool.type==='wallet')bal.wallet[pool.key]=(bal.wallet[pool.key]||0)-mru;
+  else if(pool.type==='cash')bal.cash[pool.key]=(bal.cash[pool.key]||0)-mru;
+  else if(pool.type==='agent')bal.agent_balance-=mru;
+  // Partner owes us the FULL payout amount (receivable = what we paid out)
+  if(!bal.receivable[tx.Par_l])bal.receivable[tx.Par_l]={foreign:0,mru:0,currency:tx.Cur_k};
+  bal.receivable[tx.Par_l].foreign+=N(tx.Amount_j);
+  bal.receivable[tx.Par_l].mru+=mru;
+  // Profit tracked as memo (does NOT change balance equation — embedded in receivable)
+  bal.profit_l1+=profit.profit_transaction_a;
+
+}else if(tx.type==='wallet_p2p'){
+  // No cash movement — internal ledger only
+
+}else if(tx.type==='wallet_cashout'){
+  // Wallet cashout: pool shrinks (asset down), client float shrinks (liability down)
+  if(pool.type==='wallet')bal.wallet[pool.key]=(bal.wallet[pool.key]||0)-mru;
+  else if(pool.type==='cash')bal.cash[pool.key]=(bal.cash[pool.key]||0)-mru;
+  bal.client_float-=mru;
+  bal.profit_l1+=profit.profit_transaction_a;
+
+}else if(tx.type==='b2c_deposit'){
+  // B2C deposit: cash comes in, client float (liability) increases
+  const caisse=tx.caisse||'caisse_babe';
+  bal.cash[caisse]=(bal.cash[caisse]||0)+mru;
+  bal.client_float+=mru;
+  ev.pool_type='cash';ev.pool_key=caisse;
+
+}else if(tx.type==='b2c_payout'){
+  // B2C payout: pool shrinks, client float (liability) decreases
+  if(pool.type==='wallet')bal.wallet[pool.key]=(bal.wallet[pool.key]||0)-mru;
+  else if(pool.type==='agent')bal.agent_balance-=mru;
+  else if(pool.type==='cash')bal.cash[pool.key]=(bal.cash[pool.key]||0)-mru;
+  bal.client_float-=mru;
+  bal.profit_l1+=profit.profit_transaction_a;
+
+}else if(tx.type==='agent_cashout'){
+  // Agent pays beneficiary — we owe agent (liability increases)
+  bal.agent_balance-=mru;
+  bal.profit_l1+=profit.profit_transaction_a;
+
+}else if(tx.type==='agent_refund'){
+  // Cadorim repays agent from caisse — asset down, liability down
+  const caisse=tx.caisse||'caisse_mboirick';
+  bal.cash[caisse]=(bal.cash[caisse]||0)-mru;
+  bal.agent_balance+=mru;
+  ev.pool_type='cash';ev.pool_key=caisse;
+}
+
+bal.events.push(ev);
+// Business rule checks
+if(pool.type==='wallet'&&pool.key&&(bal.wallet[pool.key]||0)<0)
+  bal.alerts.push({type:'ALERT',severity:'red',date:tx.date,id:tx.id,msg:`Insufficient float at ${pool.key} (${Math.round(bal.wallet[pool.key])} MRU) — top up required`});
+if(pool.type==='cash'&&pool.key&&(bal.cash[pool.key]||0)<0)
+  bal.alerts.push({type:'WARN',severity:'yellow',date:tx.date,id:tx.id,msg:`Caisse ${pool.key} negative (${Math.round(bal.cash[pool.key])} MRU)`});
+if(bal.agent_balance>0)
+  bal.alerts.push({type:'ERROR',severity:'red',date:tx.date,id:tx.id,msg:`Agent balance positive (${Math.round(bal.agent_balance)} MRU) — data error`});
+if(bal.client_float<-1)
+  bal.alerts.push({type:'WARN',severity:'yellow',date:tx.date,id:tx.id,msg:`Client float negative (${Math.round(bal.client_float)} MRU)`});
+}
+
+function applySett(s,bal){
+const gain=computeL2(s);
+const par=s.Par_l;
+const mru_received=Math.round(N(s.Amount_s)*N(s.fx_settlement_rate)*100)/100;
+const mru_cleared=Math.round(N(s.Amount_s)*N(s.fx_reference_rate)*100)/100;
+if(bal.receivable[par]){
+  bal.receivable[par].foreign-=N(s.Amount_s);
+  bal.receivable[par].mru-=mru_cleared;
+}
+bal.bank[s.Bank_t]=(bal.bank[s.Bank_t]||0)+mru_received;
+bal.profit_l2+=gain.gain_sett_s;
+bal.events.push({...s,...gain,event:'settlement',mru_received,mru_cleared});
+}
+
+function applyWithdrawal(w,bal){
+bal.bank[w.bank]=(bal.bank[w.bank]||0)-N(w.amount);
+bal.cash[w.caisse]=(bal.cash[w.caisse]||0)+N(w.amount);
+bal.events.push({...w,event:'withdrawal'});
+}
+
+function checkEquation(bal){
+const cashTotal=Object.values(bal.cash).reduce((a,b)=>a+b,0);
+const walletTotal=Object.values(bal.wallet).reduce((a,b)=>a+b,0);
+const bankTotal=Object.values(bal.bank).reduce((a,b)=>a+b,0);
+const recvTotal=Object.values(bal.receivable).reduce((a,r)=>a+r.mru,0);
+const assets=Math.round((cashTotal+walletTotal+bankTotal+recvTotal)*100)/100;
+const liabilities=Math.round((bal.client_float+bal.agent_balance)*100)/100;
+// Net Position = Assets - Liabilities. Always holds.
+const netPosition=Math.round((assets-liabilities)*100)/100;
+const profit_total=Math.round((bal.profit_l1+bal.profit_l2)*100)/100;
+return{assets,liabilities,netPosition,cashTotal,walletTotal,bankTotal,recvTotal,profit_total,
+  working_capital:bal.working_capital,balanced:true};
+}
+
+// ══════════════════════════════════════════════════════════════
+// RUN ENGINE — profit + balances + save for dashboard
+// ══════════════════════════════════════════════════════════════
+function runEngine(){
+const cfg=buildConfigJSON();
+const bal=initBalances(SIM_INITIAL);
+
+// Merge all events by date, process in order
+const allEvents=[];
+SIM_TXS.forEach(tx=>allEvents.push({...tx,_type:'tx',_date:tx.date}));
+SIM_SETT.forEach(s=>allEvents.push({...s,_type:'sett',_date:s.date_s}));
+SIM_WITHDRAWALS.forEach(w=>allEvents.push({...w,_type:'wd',_date:w.date}));
+allEvents.sort((a,b)=>a._date.localeCompare(b._date)||a.id.localeCompare(b.id));
+
+// Snapshot timeline after each event
+const timeline=[];
+const txResults=[];
+
+allEvents.forEach(ev=>{
+if(ev._type==='tx'){
+  const profit=computeL1(ev,cfg);
+  applyTx(ev,profit,bal);
+  txResults.push({...ev,...profit});
+}else if(ev._type==='sett'){
+  applySett(ev,bal);
+}else if(ev._type==='wd'){
+  applyWithdrawal(ev,bal);
+}
+const eq=checkEquation(bal);
+timeline.push({date:ev._date,id:ev.id,...eq,profit_l1:bal.profit_l1,profit_l2:bal.profit_l2,client_float:bal.client_float,agent_balance:bal.agent_balance});
+});
+
+const eq=checkEquation(bal);
+
+// Save results for dashboard
+const results={
+  balances:JSON.parse(JSON.stringify(bal)),
+  equation:eq,
+  timeline,
+  txResults,
+  settlements:SIM_SETT.map(s=>({...s,...computeL2(s)})),
+  withdrawals:SIM_WITHDRAWALS,
+  initial:SIM_INITIAL,
+  config:cfg,
+};
+localStorage.setItem('cadorim_results',JSON.stringify(results));
+
+// Render results
+renderResults(results);
+toast('Engine computed — open dashboard.html to view treasury');
+}
+
+function saveResults(){
+const r=localStorage.getItem('cadorim_results');
+if(!r){alert('Run engine first');return;}
+const blob=new Blob([r],{type:'application/json'});
+const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='engine_results.json';a.click();
+toast('Results saved');}
+
+// ══════════════════════════════════════════════════════════════
+// RENDER RESULTS
+// ══════════════════════════════════════════════════════════════
+function renderResults(R){
+const el=document.getElementById('results');
+const eq=R.equation;
+const bal=R.balances;
+const fmt=n=>Math.round(n).toLocaleString('fr-FR');
+const f2=n=>n.toLocaleString('fr-FR',{minimumFractionDigits:2,maximumFractionDigits:2});
+const cls=n=>n>=0?'g':'r';
+
+// Net Position bar
+let eqHtml=`<div class="eq-bar">
+<strong>Assets:</strong> ${fmt(eq.assets)} MRU
+<span style="color:var(--text-secondary)">(Cash ${fmt(eq.cashTotal)} + Wallets ${fmt(eq.walletTotal)} + Banks ${fmt(eq.bankTotal)} + Recv ${fmt(eq.recvTotal)})</span>
+<strong>&minus;</strong> <strong>Liabilities:</strong> ${fmt(eq.liabilities)} MRU
+<strong>=</strong> <strong>Net Position:</strong> ${fmt(eq.netPosition)} MRU
+<span style="color:var(--text-secondary)">(Capital ${fmt(eq.working_capital)} + Changes ${fmt(eq.netPosition - eq.working_capital)})</span>
+</div>`;
+
+// KPIs
+let html=eqHtml+`<div class="kpi-row">
+<div class="kpi"><div class="l">Cash (Caisses)</div><div class="v">${fmt(eq.cashTotal)}</div></div>
+<div class="kpi"><div class="l">Wallet Float</div><div class="v c">${fmt(eq.walletTotal)}</div></div>
+<div class="kpi"><div class="l">Receivables</div><div class="v o">${fmt(eq.recvTotal)}</div></div>
+<div class="kpi"><div class="l">Bank</div><div class="v c">${fmt(eq.bankTotal)}</div></div>
+<div class="kpi"><div class="l">Client Float</div><div class="v r">${fmt(bal.client_float)}</div></div>
+<div class="kpi"><div class="l">Agent Balance</div><div class="v r">${fmt(bal.agent_balance)}</div></div>
+<div class="kpi"><div class="l">Net Position</div><div class="v ${cls(eq.netPosition)}">${fmt(eq.netPosition)}</div></div>
+</div>`;
+
+// Cash drill-down
+html+=`<div class="r-card"><h3 onclick="this.nextElementSibling.classList.toggle('open')">Cash Positions (click to expand)</h3><div class="drill"><table><thead><tr><th>Caisse</th><th class="n">Balance</th></tr></thead><tbody>`;
+for(const[k,v]of Object.entries(bal.cash))html+=`<tr><td>${k}</td><td class="n ${v>=0?'pos':'neg'}">${fmt(v)}</td></tr>`;
+html+=`</tbody></table></div></div>`;
+
+// Wallet float
+html+=`<div class="r-card"><h3 onclick="this.nextElementSibling.classList.toggle('open')">Wallet Float (click to expand)</h3><div class="drill"><table><thead><tr><th>Wallet</th><th class="n">Balance</th></tr></thead><tbody>`;
+for(const[k,v]of Object.entries(bal.wallet))html+=`<tr><td>${k}</td><td class="n ${v>=0?'pos':'neg'}">${fmt(v)}</td></tr>`;
+html+=`</tbody></table></div></div>`;
+
+// Receivables dual-currency
+html+=`<div class="r-card"><h3 onclick="this.nextElementSibling.classList.toggle('open')">Receivables — Dual Currency (click to expand)</h3><div class="drill"><table><thead><tr><th>Partner</th><th class="n">Foreign Owed</th><th class="n">MRU Equiv</th></tr></thead><tbody>`;
+for(const[k,v]of Object.entries(bal.receivable))html+=`<tr><td>${k}</td><td class="n">${f2(v.foreign)} ${v.currency}</td><td class="n">${fmt(v.mru)} MRU</td></tr>`;
+html+=`</tbody></table></div></div>`;
+
+// Bank
+html+=`<div class="r-card"><h3 onclick="this.nextElementSibling.classList.toggle('open')">Bank Balances (click to expand)</h3><div class="drill"><table><thead><tr><th>Bank</th><th class="n">Balance</th></tr></thead><tbody>`;
+for(const[k,v]of Object.entries(bal.bank))html+=`<tr><td>${k}</td><td class="n">${fmt(v)}</td></tr>`;
+html+=`</tbody></table></div></div>`;
+
+// P&L
+html+=`<div class="r-card"><h3>Profit & Loss</h3><table><thead><tr><th>Source</th><th class="n">Amount</th></tr></thead><tbody>
+<tr><td>Layer 1 (per-transaction)</td><td class="n ${cls(bal.profit_l1)}">${f2(bal.profit_l1)}</td></tr>
+<tr><td>Layer 2 (settlement FX)</td><td class="n ${cls(bal.profit_l2)}">${f2(bal.profit_l2)}</td></tr>
+<tr style="font-weight:700;border-top:2px solid var(--border)"><td>TOTAL</td><td class="n ${cls(bal.profit_l1+bal.profit_l2)}">${f2(bal.profit_l1+bal.profit_l2)}</td></tr>
+</tbody></table></div>`;
+
+el.innerHTML=html;
+}
+
+function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.style.display='block';setTimeout(()=>t.style.display='none',2500);}
+
+// Init
+loadSimulation();
+</script>
+</body>
+</html>
